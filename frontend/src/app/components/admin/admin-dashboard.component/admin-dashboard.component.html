@@ -1,0 +1,181 @@
+<!-- src/app/components/admin/admin-dashboard.component.html -->
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>⚡ BorneMaroc</h2>
+      <p>Admin Panel</p>
+    </div>
+    
+    <nav class="nav-menu">
+      <a routerLink="/admin/dashboard" class="nav-item active">
+        <span class="icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/admin/users" class="nav-item">
+        <span class="icon">👥</span>
+        <span>Utilisateurs</span>
+      </a>
+      <a routerLink="/admin/stations" class="nav-item">
+        <span class="icon">🔋</span>
+        <span>Stations</span>
+      </a>
+      <a routerLink="/admin/reservations" class="nav-item">
+        <span class="icon">📅</span>
+        <span>Réservations</span>
+      </a>
+      <a routerLink="/admin/reports" class="nav-item">
+        <span class="icon">📈</span>
+        <span>Rapports</span>
+      </a>
+      <a routerLink="/admin/settings" class="nav-item">
+        <span class="icon">⚙️</span>
+        <span>Paramètres</span>
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <span class="user-icon">👨‍💼</span>
+        <div>
+          <p class="user-name">{{ adminName }}</p>
+          <p class="user-role">Administrateur</p>
+        </div>
+      </div>
+      <button (click)="logout()" class="logout-btn">
+        <span>🚪</span> Déconnexion
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <h1>Dashboard Administrateur</h1>
+      <div class="header-actions">
+        <span class="date">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+      </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalUsers }}</h3>
+          <p>Total Utilisateurs</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🚗</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalConducteurs }}</h3>
+          <p>Conducteurs</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalPassagers }}</h3>
+          <p>Passagers</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🔋</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalStations }}</h3>
+          <p>Stations</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalReservations }}</h3>
+          <p>Réservations</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3>{{ stats.revenusMois }} DH</h3>
+          <p>Revenus du mois</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="recent-section">
+      <div class="section-header">
+        <h2>Utilisateurs Récents</h2>
+        <button class="btn-view-all">Voir tout</button>
+      </div>
+      
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of recentUsers">
+            <td>{{ user.id }}</td>
+            <td>{{ user.nom }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="badge" [class.badge-conducteur]="user.role === 'CONDUCTEUR'">
+                {{ user.role }}
+              </span>
+            </td>
+            <td>{{ user.date }}</td>
+            <td>
+              <button class="btn-edit">✏️</button>
+              <button class="btn-delete">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Recent Reservations -->
+    <div class="recent-section">
+      <div class="section-header">
+        <h2>Réservations Récentes</h2>
+        <button class="btn-view-all">Voir tout</button>
+      </div>
+      
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Utilisateur</th>
+            <th>Station</th>
+            <th>Date</th>
+            <th>Montant</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let reservation of recentReservations">
+            <td>{{ reservation.id }}</td>
+            <td>{{ reservation.user }}</td>
+            <td>{{ reservation.station }}</td>
+            <td>{{ reservation.date }}</td>
+            <td>{{ reservation.montant }} DH</td>
+            <td><span class="badge badge-success">Confirmée</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,135 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h1>Inscription</h1>
+      <p class="subtitle">Créez votre compte BorneMaroc</p>
+    </div>
+
+    <!-- Success Message -->
+    <div class="alert alert-success" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
+
+    <!-- Error Message -->
+    <div class="alert alert-error" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Registration Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <!-- Full Name Field -->
+      <div class="form-group">
+        <label for="nom">Nom complet</label>
+        <input 
+          type="text" 
+          id="nom" 
+          formControlName="nom"
+          placeholder="Votre nom complet"
+          [class.is-invalid]="nom?.invalid && nom?.touched"
+          class="form-control">
+        <div class="invalid-feedback" *ngIf="nom?.invalid && nom?.touched">
+          <span *ngIf="nom?.errors?.['required']">Le nom est requis</span>
+          <span *ngIf="nom?.errors?.['minlength']">Minimum 2 caractères</span>
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email"
+          placeholder="exemple@email.com"
+          [class.is-invalid]="email?.invalid && email?.touched"
+          class="form-control">
+        <div class="invalid-feedback" *ngIf="email?.invalid && email?.touched">
+          <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+          <span *ngIf="email?.errors?.['email']">Email invalide</span>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="motDePasse">Mot de passe</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="motDePasse" 
+            formControlName="motDePasse"
+            placeholder="Votre mot de passe"
+            [class.is-invalid]="motDePasse?.invalid && motDePasse?.touched"
+            class="form-control">
+          <button 
+            type="button" 
+            class="password-toggle" 
+            (click)="togglePasswordVisibility()">
+            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback" *ngIf="motDePasse?.invalid && motDePasse?.touched">
+          <span *ngIf="motDePasse?.errors?.['required']">Le mot de passe est requis</span>
+          <span *ngIf="motDePasse?.errors?.['minlength']">Minimum 6 caractères</span>
+        </div>
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer mot de passe</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="showConfirmPassword ? 'text' : 'password'" 
+            id="confirmPassword" 
+            formControlName="confirmPassword"
+            placeholder="Confirmez votre mot de passe"
+            [class.is-invalid]="confirmPassword?.invalid && confirmPassword?.touched"
+            class="form-control">
+          <button 
+            type="button" 
+            class="password-toggle" 
+            (click)="toggleConfirmPasswordVisibility()">
+            <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+          <span *ngIf="confirmPassword?.errors?.['required']">Confirmation requise</span>
+          <span *ngIf="registerForm?.errors?.['passwordMismatch']">
+            Les mots de passe ne correspondent pas
+          </span>
+        </div>
+      </div>
+
+      <!-- Vehicle Field -->
+      <div class="form-group">
+        <label for="vehicule">Véhicule</label>
+        <input 
+          type="text" 
+          id="vehicule" 
+          formControlName="vehicule"
+          placeholder="Marque et modèle"
+          [class.is-invalid]="vehicule?.invalid && vehicule?.touched"
+          class="form-control">
+        <div class="invalid-feedback" *ngIf="vehicule?.invalid && vehicule?.touched">
+          <span *ngIf="vehicule?.errors?.['required']">Le véhicule est requis</span>
+          <span *ngIf="vehicule?.errors?.['minlength']">Minimum 3 caractères</span>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        class="btn-register" 
+        [disabled]="registerForm.invalid || isLoading">
+        <span *ngIf="!isLoading">S'inscrire</span>
+        <span *ngIf="isLoading" class="spinner"></span>
+      </button>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        <p>Déjà un compte? <a routerLink="/login">Se connecter</a></p>
+      </div>
+    </form>
+  </div>
+</div>

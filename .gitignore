@@ -1,0 +1,15 @@
+# Python
+data-pipeline/venv/
+data-pipeline/.venv/
+data-pipeline/__pycache__/
+data-pipeline/data/
+
+# Java/Maven
+backend/target/
+
+# Angular
+frontend/node_modules/
+frontend/.angular/
+
+# Environment
+data-pipeline/.env

@@ -1,0 +1,348 @@
+/* hero.component.css */
+
+/* ===== VARIABLES COULEURS ===== */
+:root {
+  --vert-electrique: #00C853;
+  --bleu-moderne: #2196F3;
+  --gris-fonce: #1a2a3a;
+  --gris-moyen: #546e7a;
+  --blanc: #ffffff;
+  --gris-clair: #f5f5f5;
+}
+
+/* ===== SECTION HERO ===== */
+.hero {
+  background: linear-gradient(135deg, #F1F8E9 0%, #E3F2FD 100%);
+  padding: 4rem 1.5rem;
+  min-height: 550px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Effet de vague en arrière-plan */
+.hero::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to top, rgba(255,255,255,0.3), transparent);
+  pointer-events: none;
+}
+
+/* Cercle décoratif */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0,200,83,0.1), transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ===== CONTAINER ===== */
+.hero-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== CONTENU TEXTE ===== */
+.hero-content {
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  color: var(--gris-fonce);
+}
+
+.highlight {
+  background: linear-gradient(135deg, var(--vert-electrique), var(--bleu-moderne));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  position: relative;
+  display: inline-block;
+}
+
+.highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(135deg, var(--vert-electrique), var(--bleu-moderne));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.hero-title:hover .highlight::after {
+  transform: scaleX(1);
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: var(--gris-moyen);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* ===== BOUTONS ===== */
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-large {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--vert-electrique), var(--bleu-moderne));
+  color: var(--blanc);
+  box-shadow: 0 4px 15px rgba(0, 200, 83, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 200, 83, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--blanc);
+  color: var(--vert-electrique);
+  border: 2px solid var(--vert-electrique);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, var(--vert-electrique), var(--bleu-moderne));
+  color: var(--blanc);
+  border-color: transparent;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 200, 83, 0.2);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* ===== IMAGE ===== */
+.hero-image {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: fadeInRight 0.8s ease-out;
+  transition: all 0.3s ease;
+}
+
+.hero-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  display: block;
+}
+
+.hero-image:hover img {
+  transform: scale(1.05);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Animation de pulsation pour les boutons */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(0, 200, 83, 0.4);
+  }
+}
+
+.btn-primary {
+  animation: pulse 2s infinite;
+}
+
+.btn-primary:hover {
+  animation: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-container {
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 3rem 1rem;
+    min-height: auto;
+  }
+  
+  .hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .hero-content {
+    order: 2;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .hero-buttons {
+    justify-content: center;
+  }
+  
+  .hero-image {
+    max-width: 350px;
+    height: 250px;
+    order: 1;
+  }
+  
+  .btn-large {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .hero::after {
+    width: 300px;
+    height: 300px;
+    top: -30%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-large {
+    justify-content: center;
+  }
+  
+  .hero-image {
+    max-width: 280px;
+    height: 200px;
+  }
+}
+
+/* ===== SUPPORT MODE SOMBRE ===== */
+@media (prefers-color-scheme: dark) {
+  .hero {
+    background: linear-gradient(135deg, #1a2a3a 0%, #0d1b2a 100%);
+  }
+  
+  .hero-title {
+    color: #ffffff;
+  }
+  
+  .hero-subtitle {
+    color: #b0bec5;
+  }
+  
+  .btn-secondary {
+    background: transparent;
+    color: var(--vert-electrique);
+  }
+  
+  .btn-secondary:hover {
+    background: linear-gradient(135deg, var(--vert-electrique), var(--bleu-moderne));
+    color: var(--blanc);
+  }
+}
+
+/* ===== ACCESSIBILITÉ ===== */
+@media (prefers-reduced-motion: reduce) {
+  .hero-content,
+  .hero-image,
+  .btn-primary,
+  .btn-secondary,
+  .hero-image img,
+  .hero-image:hover {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+  
+  .highlight::after {
+    display: none;
+  }
+}

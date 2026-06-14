@@ -1,0 +1,130 @@
+<div class="a-propos-page">
+  <!-- Section Héro -->
+  <section class="about-hero">
+    <div class="hero-content">
+      <h1>À propos de nous</h1>
+      <p>Découvrez qui nous sommes et comment nous révolutionnons la mobilité électrique au Maroc</p>
+    </div>
+  </section>
+
+  <!-- Section Mission -->
+  <section class="mission-section">
+    <div class="container">
+      <div class="mission-card">
+        <div class="mission-icon">🎯</div>
+        <h2>Notre mission</h2>
+        <p>Faciliter la mobilité électrique en offrant une plateforme centrale et intuitive pour localiser, réserver et recharger vos véhicules électriques en toute simplicité.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Histoire -->
+  <section class="histoire-section">
+    <div class="container">
+      <div class="histoire-grid">
+        <div class="histoire-content">
+          <h2>Notre histoire</h2>
+          <p>Née en 2023 d'une vision commune pour un Maroc plus vert, notre plateforme est le fruit de la passion de passionnés de mobilité durable.</p>
+          <p>Face au développement croissant des véhicules électriques au Maroc, nous avons identifié le besoin crucial d'une solution centralisée pour localiser les bornes de recharge.</p>
+          <div class="chiffre-cle">
+            <div class="chiffre">+500</div>
+            <div class="label">Bornes référencées</div>
+          </div>
+        </div>
+        <div class="histoire-image">
+          <img src="assets/images/histoire.jpg" alt="Notre histoire">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Équipe -->
+  <section class="equipe-section">
+    <div class="container">
+      <h2>L'équipe derrière le projet</h2>
+      <p class="section-subtitle">Des passionnés unis par la même vision</p>
+      
+      <div class="equipe-grid">
+        <div class="membre-card" *ngFor="let membre of equipe">
+          <div class="membre-image">
+            <img [src]="membre.photo" [alt]="membre.nom">
+            <div class="social-links">
+              <a [href]="membre.linkedin" target="_blank">🔗</a>
+              <a [href]="membre.twitter" target="_blank">🐦</a>
+            </div>
+          </div>
+          <div class="membre-info">
+            <h3>{{ membre.nom }}</h3>
+            <p class="membre-role">{{ membre.role }}</p>
+            <p class="membre-bio">{{ membre.bio }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Valeurs -->
+  <section class="valeurs-section">
+    <div class="container">
+      <h2>Nos valeurs</h2>
+      <div class="valeurs-grid">
+        <div class="valeur-card">
+          <div class="valeur-icon">🌱</div>
+          <h3>Écologie</h3>
+          <p>Engagés pour un avenir plus propre et durable</p>
+        </div>
+        <div class="valeur-card">
+          <div class="valeur-icon">💡</div>
+          <h3>Innovation</h3>
+          <p>À la pointe des technologies de recharge</p>
+        </div>
+        <div class="valeur-card">
+          <div class="valeur-icon">🤝</div>
+          <h3>Transparence</h3>
+          <p>Des informations claires et fiables</p>
+        </div>
+        <div class="valeur-card">
+          <div class="valeur-icon">⚡</div>
+          <h3>Accessibilité</h3>
+          <p>La recharge pour tous, partout au Maroc</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Statistiques -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number" data-count="500">0</div>
+          <div class="stat-label">Bornes partenaires</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-count="10000">0</div>
+          <div class="stat-label">Utilisateurs actifs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-count="98">0</div>
+          <div class="stat-label">Satisfaction client</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-count="24">0</div>
+          <div class="stat-label">Support 7j/7</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Prêt à rejoindre l'aventure ?</h2>
+      <p>Rejoignez des milliers d'utilisateurs qui font confiance à notre plateforme</p>
+      <div class="cta-buttons">
+        <a routerLink="/inscription" class="btn-cta-primary">Créer un compte</a>
+        <a routerLink="/contact" class="btn-cta-secondary">Nous contacter</a>
+      </div>
+    </div>
+  </section>
+</div>

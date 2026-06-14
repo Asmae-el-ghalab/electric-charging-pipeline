@@ -1,0 +1,198 @@
+<div class="app-container">
+  <!-- Section Recherche -->
+  <section class="search-section">
+    <div class="search-container">
+      <div class="search-box">
+        <h2 class="search-title">🔍 Trouver une borne de recharge</h2>
+        <div class="search-form">
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="📍 Ville (ex: Marrakech, Casablanca...)"
+            [(ngModel)]="searchCity"
+            (keyup.enter)="searchStations()">
+          
+          <select class="search-input" [(ngModel)]="selectedChargeType">
+            <option value="">⚡ Type de borne</option>
+            <option value="normale">Recharge normale (&lt;100kW)</option>
+            <option value="rapide">Recharge rapide (100-199kW)</option>
+            <option value="ultra">Ultra rapide (≥200kW)</option>
+          </select>
+
+          <select class="search-input" [(ngModel)]="selectedStatus">
+            <option value="">📊 Statut</option>
+            <option value="Available">Disponible</option>
+            <option value="Occupied">Occupée</option>
+            <option value="OutOfOrder">Hors service</option>
+          </select>
+
+          <button class="search-btn" (click)="searchStations()">🔍 Rechercher</button>
+          <button class="reset-btn" (click)="resetFilters()">⟳ Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Chargement des bornes...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    ⚠️ {{ errorMessage }}
+  </div>
+
+  <!-- Quality Report Button & Display -->
+  <section class="report-section">
+    <button class="report-toggle-btn" (click)="toggleReport()">
+      📊 {{ showReport ? 'Masquer' : 'Afficher' }} le rapport qualité
+    </button>
+    
+    <div *ngIf="showReport && qualityReport" class="quality-report">
+      <h3>📈 Rapport qualité des données</h3>
+      <div class="report-grid">
+        <div class="report-card">
+          <div class="report-value">{{ qualityReport.total }}</div>
+          <div class="report-label">Total des bornes</div>
+        </div>
+        <div class="report-card warning">
+          <div class="report-value">{{ qualityReport.missingCity }}</div>
+          <div class="report-label">Bornes sans ville</div>
+        </div>
+        <div class="report-card warning">
+          <div class="report-value">{{ qualityReport.missingOperator }}</div>
+          <div class="report-label">Bornes sans opérateur</div>
+        </div>
+        <div class="report-card warning">
+          <div class="report-value">{{ qualityReport.missingStatus }}</div>
+          <div class="report-label">Bornes sans statut</div>
+        </div>
+        <div class="report-card warning">
+          <div class="report-value">{{ qualityReport.missingPower }}</div>
+          <div class="report-label">Bornes sans puissance</div>
+        </div>
+        <div class="report-card success">
+          <div class="report-value">{{ qualityReport.operational }}</div>
+          <div class="report-label">Bornes opérationnelles</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Carte -->
+  <section class="map-section">
+    <div class="map-container">
+      <h2 class="map-title">🗺️ Carte interactive des bornes</h2>
+      <div class="map-wrapper">
+        <div class="map-placeholder">
+          <iframe 
+            #mapIframe
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-13.0,27.0,-1.0,36.0&layer=mapnik&marker=31.5,-7.0" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Bornes -->
+  <section class="stations-section">
+    <div class="stations-container">
+      <div class="section-header">
+        <h2 class="section-title">⚡ Bornes disponibles</h2>
+        <p class="section-subtitle">
+          {{ filteredStations.length }} borne(s) trouvée(s) 
+          <span *ngIf="searchCity">à {{ searchCity }}</span>
+        </p>
+      </div>
+      
+      <div *ngIf="filteredStations.length === 0 && !isLoading" class="no-results">
+        <div class="no-results-icon">🔌</div>
+        <h3>Aucune borne trouvée</h3>
+        <p>Essayez de modifier vos critères de recherche</p>
+      </div>
+
+      <div class="stations-grid">
+        <div class="station-card" *ngFor="let station of filteredStations">
+          <div class="card-header">
+            <h3>{{ station.title }}</h3>
+            <span class="station-id">#{{ station.id }}</span>
+          </div>
+          <div class="card-body">
+            <div class="station-info">
+              <i>📍</i>
+              <span>{{ station.city }}{{ station.address ? ', ' + station.address : '' }}</span>
+            </div>
+            <div class="station-info">
+              <i>🔌</i>
+              <span class="availability" [class]="getStatusClass(station.status)">
+                {{ getStatusLabel(station.status) }}
+              </span>
+            </div>
+            <div class="station-info">
+              <i>⚡</i>
+              <span class="charging-type" [class]="getPowerClass(getStationMaxPower(station))">
+                {{ getPowerLabel(getStationMaxPower(station)) }}
+              </span>
+            </div>
+            <div class="station-info" *ngIf="station.operator">
+              <i>🏢</i>
+              <span>{{ station.operator }}</span>
+            </div>
+            <div class="station-info">
+              <i>🔗</i>
+              <span>{{ station.connections.length }} connexion(s)</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn-details" (click)="showStationDetails(station)">Voir détails →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Détails -->
+  <div class="modal" *ngIf="selectedStation" (click)="closeDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ selectedStation.title }}</h2>
+        <button class="modal-close" (click)="closeDetails()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-row">
+          <strong>📍 Adresse :</strong> {{ selectedStation.address }}, {{ selectedStation.city }}
+        </div>
+        <div class="detail-row">
+          <strong>🏢 Opérateur :</strong> {{ selectedStation.operator || 'Non spécifié' }}
+        </div>
+        <div class="detail-row">
+          <strong>📊 Statut :</strong> 
+          <span [class]="getStatusClass(selectedStation.status)">{{ getStatusLabel(selectedStation.status) }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>🟢 Opérationnelle :</strong> {{ selectedStation.is_operational ? 'Oui' : 'Non' }}
+        </div>
+        <div class="detail-row">
+          <strong>🔌 Connexions :</strong>
+          <div class="connections-list">
+            <div class="connection-item" *ngFor="let conn of selectedStation.connections">
+              <span class="conn-type">{{ conn.connection_type }}</span>
+              <span class="conn-power">{{ conn.power_kw ? conn.power_kw + ' kW' : 'Puissance non spécifiée' }}</span>
+              <span class="conn-level">{{ conn.level }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <strong>🗺️ Coordonnées :</strong> {{ selectedStation.latitude }}, {{ selectedStation.longitude }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="openInMaps(selectedStation)">🗺️ Ouvrir dans Maps</button>
+        <button class="btn-secondary" (click)="closeDetails()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
