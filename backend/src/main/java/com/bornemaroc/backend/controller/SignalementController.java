@@ -1,14 +1,25 @@
+// src/main/java/com/bornemaroc/backend/controller/SignalementController.java
 package com.bornemaroc.backend.controller;
 
-import com.bornemaroc.backend.entity.Signalement;
-import com.bornemaroc.backend.enums.StatutTraitement;
-import com.bornemaroc.backend.enums.TypeSignalement;
-import com.bornemaroc.backend.service.SignalementService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bornemaroc.backend.entity.Signalement;
+import com.bornemaroc.backend.service.SignalementService;
 
 @RestController
 @RequestMapping("/api/signalements")
@@ -18,39 +29,104 @@ public class SignalementController {
     @Autowired
     private SignalementService signalementService;
 
-    // POST http://localhost:8080/api/signalements
-    // Body: {"conducteurId":1, "borneId":2,
-    //        "type":"PANNE", "description":"..."}
     @PostMapping
-    public ResponseEntity<Signalement> signalerBorne(
-            @RequestBody Map<String, String> body) {
-        Signalement s = signalementService.signalerBorne(
-                Long.parseLong(body.get("conducteurId")),
-                Long.parseLong(body.get("borneId")),
-                TypeSignalement.valueOf(body.get("type")),
-                body.get("description")
-        );
-        return ResponseEntity.ok(s);
+    public ResponseEntity<?> signalerBorne(@RequestBody Map<String, String> body) {
+        try {
+            System.out.println("📝 =========================================");
+            System.out.println("📝 Requête de signalement reçue");
+            System.out.println("📝 Body: " + body);
+            System.out.println("📝 =========================================");
+            
+            // ✅ Extraire les données
+            String conducteurIdStr = body.get("conducteurId");
+            String borneIdStr = body.get("borneId");
+            String type = body.get("type");
+            String description = body.get("description");
+            
+            // ✅ Validation
+            if (conducteurIdStr == null || borneIdStr == null || type == null || type.isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Données incomplètes: conducteurId, borneId et type sont requis");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            Long conducteurId = Long.parseLong(conducteurIdStr);
+            Long borneId = Long.parseLong(borneIdStr);
+            
+            // ✅ Appeler le service
+            Signalement signalement = signalementService.signalerBorne(conducteurId, borneId, type, description);
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(signalement);
+            
+        } catch (NumberFormatException e) {
+            System.err.println("❌ Erreur de format: " + e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Les IDs doivent être des nombres valides");
+            return ResponseEntity.badRequest().body(error);
+            
+        } catch (RuntimeException e) {
+            System.err.println("❌ " + e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur interne du serveur");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
-    // GET http://localhost:8080/api/signalements
     @GetMapping
-    public List<Signalement> getAllSignalements() {
-        return signalementService.getAllSignalements();
+    public ResponseEntity<?> getAllSignalements() {
+        try {
+            List<Signalement> signalements = signalementService.getAllSignalements();
+            return ResponseEntity.ok(signalements);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
-    // GET http://localhost:8080/api/signalements/attente
     @GetMapping("/attente")
-    public List<Signalement> getSignalementsEnAttente() {
-        return signalementService.getSignalementsEnAttente();
+    public ResponseEntity<?> getSignalementsEnAttente() {
+        try {
+            List<Signalement> signalements = signalementService.getSignalementsEnAttente();
+            return ResponseEntity.ok(signalements);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
-    // PUT http://localhost:8080/api/signalements/1/traiter?statut=RESOLU
+    @GetMapping("/conducteur/{conducteurId}")
+    public ResponseEntity<?> getSignalementsByConducteur(@PathVariable Long conducteurId) {
+        try {
+            List<Signalement> signalements = signalementService.getSignalementsByConducteur(conducteurId);
+            return ResponseEntity.ok(signalements);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
     @PutMapping("/{id}/traiter")
-    public ResponseEntity<Signalement> traiterSignalement(
-            @PathVariable Long id,
-            @RequestParam StatutTraitement statut) {
-        return ResponseEntity.ok(
-                signalementService.traiterSignalement(id, statut));
+    public ResponseEntity<?> traiterSignalement(
+            @PathVariable Long id, 
+            @RequestParam String statut) {
+        try {
+            Signalement signalement = signalementService.traiterSignalement(id, statut);
+            return ResponseEntity.ok(signalement);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }
