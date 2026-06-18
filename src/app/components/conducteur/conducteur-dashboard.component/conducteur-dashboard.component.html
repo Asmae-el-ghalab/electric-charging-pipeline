@@ -1,0 +1,316 @@
+<!-- src/app/components/conducteur/conducteur-dashboard.component.html -->
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">BorneMaroc</span>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <button class="nav-item" [class.active]="activeTab === 'vehicules'" (click)="setActiveTab('vehicules')">
+        <span class="nav-icon">🚗</span>
+        <span class="nav-label">Véhicules</span>
+        <span class="badge" *ngIf="vehicules.length > 0">{{ vehicules.length }}</span>
+      </button>
+      
+      <button class="nav-item" [class.active]="activeTab === 'signalements'" (click)="setActiveTab('signalements')">
+        <span class="nav-icon">⚠️</span>
+        <span class="nav-label">Signalements</span>
+        <span class="badge" *ngIf="signalements.length > 0">{{ signalements.length }}</span>
+      </button>
+      
+      <button class="nav-item" [class.active]="activeTab === 'trajets'" (click)="setActiveTab('trajets')">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-label">Trajets</span>
+        <span class="badge" *ngIf="trajets.length > 0">{{ trajets.length }}</span>
+      </button>
+      
+      <button class="nav-item" [class.active]="activeTab === 'profil'" (click)="setActiveTab('profil')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profil</span>
+      </button>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <button class="nav-item logout" (click)="logout()">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Déconnexion</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-title">
+        <h1>{{ getHeaderTitle() }}</h1>
+        <p class="header-subtitle">Bienvenue, {{ conducteur?.prenom }} {{ conducteur?.nom }}</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-refresh" (click)="refreshData()" title="Actualiser">🔄</button>
+        <div class="user-avatar">
+          {{ conducteur?.prenom?.charAt(0) }}{{ conducteur?.nom?.charAt(0) }}
+        </div>
+      </div>
+    </header>
+
+    <!-- Notification -->
+    <div class="notification-toast" *ngIf="showNotification" [class]="notificationType">
+      <div class="toast-content">
+        <span class="toast-icon">{{ notificationType === 'success' ? '✅' : notificationType === 'error' ? '❌' : notificationType === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+        <span class="toast-message">{{ notificationMessage }}</span>
+      </div>
+      <button class="toast-close" (click)="showNotification = false">✕</button>
+    </div>
+
+    <!-- ========== TAB SIGNALEMENTS ========== -->
+    <div *ngIf="activeTab === 'signalements'" class="tab-content signalements-tab">
+      
+      <div class="section-header">
+        <div>
+          <h2>📢 Signalements des bornes</h2>
+          <p class="section-subtitle">Signalez un problème sur une borne de recharge</p>
+        </div>
+        <button class="btn-primary btn-lg" (click)="ouvrirFormulaireSignalement()">
+          <span class="btn-icon">➕</span> Nouveau signalement
+        </button>
+      </div>
+
+      <!-- Formulaire Signalement -->
+      <div class="modal-overlay" *ngIf="showSignalementForm" (click)="fermerFormulaireSignalement()">
+        <div class="modal-container" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>📝 Nouveau signalement</h3>
+            <button class="modal-close" (click)="fermerFormulaireSignalement()">✕</button>
+          </div>
+          
+          <div class="modal-body">
+            <div class="form-group">
+              <label>🔌 Numéro de la borne *</label>
+              <input type="number" [(ngModel)]="nouveauSignalement.borneId" placeholder="Ex: 191005" class="form-control">
+            </div>
+            
+            <div class="form-group">
+              <label>⚠️ Type de problème *</label>
+              <select [(ngModel)]="nouveauSignalement.type" class="form-control">
+                <option value="PANNE">🔧 Panne technique</option>
+                <option value="PROBLEME_FACTURATION">💰 Problème de facturation</option>
+                <option value="AUTRE">📝 Autre problème</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>📝 Description *</label>
+              <textarea [(ngModel)]="nouveauSignalement.description" rows="4" placeholder="Décrivez le problème..." class="form-control"></textarea>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="fermerFormulaireSignalement()">Annuler</button>
+            <button class="btn-primary" (click)="signalerBorne()" [disabled]="isSubmitting">
+              {{ isSubmitting ? '⏳ Envoi...' : '📤 Envoyer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques -->
+      <div class="stats-grid" *ngIf="signalements.length > 0">
+        <div class="stat-card"><div class="stat-value">{{ statsTotal }}</div><div class="stat-label">Total</div></div>
+        <div class="stat-card warning"><div class="stat-value">{{ statsEnAttente }}</div><div class="stat-label">En attente</div></div>
+        <div class="stat-card info"><div class="stat-value">{{ statsEnCours }}</div><div class="stat-label">En cours</div></div>
+        <div class="stat-card success"><div class="stat-value">{{ statsResolus }}</div><div class="stat-label">Résolus</div></div>
+        <div class="stat-card danger"><div class="stat-value">{{ statsRejetes }}</div><div class="stat-label">Rejetés</div></div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="filters-bar" *ngIf="signalements.length > 0">
+        <span class="filters-label">Filtrer :</span>
+        <button class="chip" [class.active]="!filtreStatut" (click)="filtreStatut = ''; appliquerFiltres()">Tous</button>
+        <button class="chip warning" [class.active]="filtreStatut === 'EN_ATTENTE'" (click)="filtreStatut = 'EN_ATTENTE'; appliquerFiltres()">⏳ Attente</button>
+        <button class="chip success" [class.active]="filtreStatut === 'RESOLU'" (click)="filtreStatut = 'RESOLU'; appliquerFiltres()">✅ Résolus</button>
+      </div>
+
+      <!-- Liste -->
+      <div class="signalements-list" *ngIf="!loading.signalements">
+        <div class="signalement-card" *ngFor="let s of signalementsFiltres">
+          <div class="card-header">
+            <span>{{ getTypeSignalementTexte(s.type) }}</span>
+            <span class="badge" [class]="getStatutTraitementClass(s.statut)">{{ getStatutTraitementTexte(s.statut) }}</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Borne #{{ s.borne?.id }}</strong></p>
+            <p>{{ s.description }}</p>
+            <small>{{ formatDateTime(s.dateSignalement) }}</small>
+          </div>
+          <div class="card-footer">
+            <button class="btn-detail" (click)="voirDetailsSignalement(s)">📖 Détails</button>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="signalements.length === 0">
+          <div class="empty-icon">📭</div>
+          <h3>Aucun signalement</h3>
+          <button class="btn-primary" (click)="ouvrirFormulaireSignalement()">➕ Créer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB TRAJETS ========== -->
+    <div *ngIf="activeTab === 'trajets'" class="tab-content trajets-tab">
+      
+      <div class="section-header">
+        <div>
+          <h2>🗺️ Historique des trajets</h2>
+          <p class="section-subtitle">Consultez vos recharges et déplacements</p>
+        </div>
+      </div>
+
+      <!-- Statistiques -->
+      <div class="stats-grid" *ngIf="trajets.length > 0">
+        <div class="stat-card"><div class="stat-value">{{ statsTrajetsTotal }}</div><div class="stat-label">Total</div></div>
+        <div class="stat-card success"><div class="stat-value">{{ statsTrajetsTermines }}</div><div class="stat-label">Terminés</div></div>
+        <div class="stat-card info"><div class="stat-value">{{ statsTrajetsEnCours }}</div><div class="stat-label">En cours</div></div>
+        <div class="stat-card"><div class="stat-value">{{ statsTrajetsDistanceTotale | number:'1.0-0' }} km</div><div class="stat-label">Distance</div></div>
+        <div class="stat-card"><div class="stat-value">{{ statsTrajetsCoutTotal | currency:'EUR' }}</div><div class="stat-label">Coût total</div></div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="filters-bar" *ngIf="trajets.length > 0">
+        <span class="filters-label">Filtrer :</span>
+        <button class="chip" [class.active]="!filtreTrajetStatus" (click)="filtreTrajetStatus = ''; appliquerFiltresTrajets()">Tous</button>
+        <button class="chip success" [class.active]="filtreTrajetStatus === 'TERMINE'" (click)="filtreTrajetStatus = 'TERMINE'; appliquerFiltresTrajets()">✅ Terminés</button>
+        <button class="chip info" [class.active]="filtreTrajetStatus === 'EN_COURS'" (click)="filtreTrajetStatus = 'EN_COURS'; appliquerFiltresTrajets()">🔄 En cours</button>
+        <input type="date" [(ngModel)]="filtreTrajetDate" (change)="appliquerFiltresTrajets()" class="form-control-sm">
+      </div>
+
+      <!-- Liste -->
+      <div class="trajets-list" *ngIf="!loadingTrajets">
+        <div class="trajet-card" *ngFor="let t of trajetsFiltres" [class]="getStatusTrajetClass(t.status)">
+          <div class="card-header">
+            <span class="card-id">#{{ t.id }}</span>
+            <span class="card-date">{{ t.dateDebut | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span class="badge" [class]="getStatusTrajetClass(t.status)">{{ getStatusTrajetTexte(t.status) }}</span>
+          </div>
+          <div class="card-body">
+            <div class="trajet-details">
+              <div><span class="detail-icon">🔌</span> Borne #{{ t.borneId }}</div>
+              <div><span class="detail-icon">⏱️</span> {{ formaterDuree(t.dureeMinutes || 0) }}</div>
+              <div *ngIf="t.distanceKm"><span class="detail-icon">📏</span> {{ t.distanceKm }} km</div>
+              <div *ngIf="t.consommationKwh"><span class="detail-icon">⚡</span> {{ t.consommationKwh }} kWh</div>
+              <div *ngIf="t.coutTotal"><span class="detail-icon">💰</span> {{ t.coutTotal | currency:'EUR' }}</div>
+              <div *ngIf="t.vehicule"><span class="detail-icon">🚗</span> {{ t.vehicule }}</div>
+            </div>
+            <div class="progress-container" *ngIf="t.status === 'EN_COURS'">
+              <div class="progress-bar-wrapper"><div class="progress-bar" style="width:50%"></div></div>
+              <div class="progress-label">🔄 Recharge en cours...</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="trajets.length === 0">
+          <div class="empty-icon">🗺️</div>
+          <h3>Aucun trajet</h3>
+          <p>Vous n'avez pas encore effectué de trajet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB VEHICULES ========== -->
+    <div *ngIf="activeTab === 'vehicules'" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2>🚗 Mes véhicules</h2>
+          <p class="section-subtitle">Gérez vos véhicules électriques</p>
+        </div>
+      </div>
+
+      <div class="vehicules-grid">
+        <div class="vehicule-card" *ngFor="let v of vehicules">
+          <div class="vehicule-icon">🚗</div>
+          <div class="vehicule-info">
+            <h3>{{ v.marque }} {{ v.modele }}</h3>
+            <p><strong>Immatriculation:</strong> {{ v.immatriculation }}</p>
+            <p><strong>Année:</strong> {{ v.annee }}</p>
+            <span class="principal-badge" *ngIf="v.estPrincipal">⭐ Principal</span>
+          </div>
+          <div class="vehicule-actions">
+            <button class="btn-sm" *ngIf="!v.estPrincipal" (click)="definirVehiculePrincipal(v.id)">⭐ Principal</button>
+            <button class="btn-sm danger" (click)="supprimerVehicule(v.id)">🗑️</button>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="vehicules.length === 0">
+          <div class="empty-icon">🚗</div>
+          <h3>Aucun véhicule</h3>
+        </div>
+      </div>
+
+      <div class="add-vehicule-form">
+        <h3>➕ Ajouter un véhicule</h3>
+        <div class="form-row">
+          <input type="text" [(ngModel)]="nouveauVehicule.marque" placeholder="Marque" class="form-control">
+          <input type="text" [(ngModel)]="nouveauVehicule.modele" placeholder="Modèle" class="form-control">
+          <input type="text" [(ngModel)]="nouveauVehicule.immatriculation" placeholder="Immatriculation" class="form-control">
+          <button class="btn-primary" (click)="ajouterVehicule()">➕ Ajouter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB PROFIL ========== -->
+    <div *ngIf="activeTab === 'profil'" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2>👤 Mon profil</h2>
+          <p class="section-subtitle">Gérez vos informations personnelles</p>
+        </div>
+        <button class="btn-primary" *ngIf="!editMode" (click)="activerEditMode()">✏️ Modifier</button>
+      </div>
+
+      <div class="profil-card" *ngIf="conducteur && !editMode">
+        <div class="profil-avatar">{{ conducteur.prenom?.charAt(0) }}{{ conducteur.nom?.charAt(0) }}</div>
+        <div class="profil-info">
+          <p><strong>👤 Nom :</strong> {{ conducteur.prenom }} {{ conducteur.nom }}</p>
+          <p><strong>📧 Email :</strong> {{ conducteur.email }}</p>
+          <p><strong>📞 Téléphone :</strong> {{ conducteur.telephone || 'Non renseigné' }}</p>
+          <p><strong>📅 Inscription :</strong> {{ formatDateTime(conducteur.dateInscription) }}</p>
+        </div>
+      </div>
+
+      <div class="profil-card" *ngIf="editMode">
+        <div class="form-group"><label>Prénom</label><input type="text" [(ngModel)]="profilEdit.prenom" class="form-control"></div>
+        <div class="form-group"><label>Nom</label><input type="text" [(ngModel)]="profilEdit.nom" class="form-control"></div>
+        <div class="form-group"><label>Email</label><input type="email" [(ngModel)]="profilEdit.email" class="form-control"></div>
+        <div class="form-group"><label>Téléphone</label><input type="tel" [(ngModel)]="profilEdit.telephone" class="form-control"></div>
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="annulerEdit()">Annuler</button>
+          <button class="btn-primary" (click)="sauvegarderProfil()">💾 Sauvegarder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Détails -->
+    <div class="modal-overlay" *ngIf="showModalDetails" (click)="fermerModalDetails()">
+      <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>📋 Détails</h3>
+          <button class="modal-close" (click)="fermerModalDetails()">✕</button>
+        </div>
+        <div class="modal-body" *ngIf="signalementSelectionne">
+          <p><strong>Type:</strong> {{ getTypeSignalementTexte(signalementSelectionne.type) }}</p>
+          <p><strong>Borne:</strong> #{{ signalementSelectionne.borne?.id }}</p>
+          <p><strong>Date:</strong> {{ formatDateTime(signalementSelectionne.dateSignalement) }}</p>
+          <p><strong>Statut:</strong> {{ getStatutTraitementTexte(signalementSelectionne.statut) }}</p>
+          <p><strong>Description:</strong> {{ signalementSelectionne.description }}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="fermerModalDetails()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

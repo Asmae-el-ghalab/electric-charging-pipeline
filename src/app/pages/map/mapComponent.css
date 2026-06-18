@@ -1,0 +1,305 @@
+.map-page {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Contrôles */
+.map-controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  background: transparent;
+}
+
+.search-box {
+  flex: 1;
+  max-width: 400px;
+  background: white;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  padding: 8px 18px;
+  transition: all 0.3s;
+}
+
+.search-box:focus-within {
+  box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  font-size: 1.1rem;
+  margin-right: 10px;
+  opacity: 0.6;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  padding: 10px 0;
+  font-size: 0.95rem;
+  outline: none;
+  background: transparent;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #999;
+  padding: 5px;
+  transition: color 0.3s;
+}
+
+.clear-btn:hover {
+  color: #e74c3c;
+}
+
+.filter-group {
+  display: flex;
+  gap: 10px;
+}
+
+.status-select {
+  padding: 10px 18px;
+  border-radius: 30px;
+  border: none;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.status-select:hover {
+  transform: translateY(-2px);
+}
+
+.locate-btn, .refresh-btn {
+  padding: 10px 18px;
+  border-radius: 30px;
+  border: none;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.locate-btn:hover, .refresh-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Loading */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.95);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e0e4e8;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Panneau stats */
+.stats-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  padding: 12px 20px;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  display: flex;
+  gap: 25px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.95);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #7f8c8d;
+}
+
+/* Légende */
+.legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  padding: 12px 18px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  z-index: 1000;
+  font-size: 0.8rem;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.95);
+}
+
+.legend h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.marker-dot.operational { background: #27ae60; }
+.marker-dot.maintenance { background: #f39c12; }
+.marker-dot.outofservice { background: #e74c3c; }
+.marker-dot.planned { background: #3498db; }
+
+/* Styles popup Leaflet */
+:host ::ng-deep .borne-popup {
+  min-width: 220px;
+  max-width: 280px;
+}
+
+:host ::ng-deep .borne-popup h4 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+:host ::ng-deep .popup-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+:host ::ng-deep .popup-status.operational {
+  background: #d4edda;
+  color: #155724;
+}
+
+:host ::ng-deep .popup-status.maintenance {
+  background: #fff3cd;
+  color: #856404;
+}
+
+:host ::ng-deep .popup-status.outofservice {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+:host ::ng-deep .popup-status.planned {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+:host ::ng-deep .popup-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+}
+
+:host ::ng-deep .popup-icon {
+  font-size: 0.85rem;
+  min-width: 20px;
+}
+
+:host ::ng-deep .free {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+:host ::ng-deep .popup-btn {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.3s;
+}
+
+:host ::ng-deep .popup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 10px rgba(102,126,234,0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .map-controls {
+    flex-direction: column;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+  
+  .search-box {
+    max-width: none;
+  }
+  
+  .filter-group {
+    justify-content: space-between;
+  }
+  
+  .stats-panel, .legend {
+    display: none;
+  }
+}

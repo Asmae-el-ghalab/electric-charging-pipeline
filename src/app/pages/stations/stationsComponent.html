@@ -1,0 +1,224 @@
+<!-- src/app/pages/stations/stationsComponent.html -->
+<div class="stations-container">
+  <!-- Header -->
+  <div class="stations-header">
+    <div class="header-left">
+      <h1>⚡ Bornes de Recharge</h1>
+      <span class="total-info">{{ totalElements }} bornes disponibles</span>
+    </div>
+    <div class="header-actions">
+      <div class="session-indicator" *ngIf="sessionActive && sessionVerifiee">
+        <span class="session-badge active">
+          <i class="fas fa-bolt"></i>
+          Recharge en cours
+        </span>
+        <button class="btn btn-sm btn-primary" (click)="voirSession(sessionActive.id)">
+          Voir
+        </button>
+      </div>
+      
+      <button class="btn btn-filter" (click)="toggleFilters()">
+        <i class="fas fa-filter"></i>
+        {{ showFilters ? 'Masquer filtres' : 'Filtres' }}
+        <span class="filter-count" *ngIf="filterStatus || filterCity || filterOperator">
+          {{ (filterStatus ? 1 : 0) + (filterCity ? 1 : 0) + (filterOperator ? 1 : 0) }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-panel" *ngIf="showFilters">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Statut</label>
+        <select [(ngModel)]="filterStatus" (change)="onFilterChange()">
+          <option value="">Tous les statuts</option>
+          <option *ngFor="let status of statusList" [value]="status">
+            {{ getStatusText(status) }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Ville</label>
+        <select [(ngModel)]="filterCity" (change)="onFilterChange()">
+          <option value="">Toutes les villes</option>
+          <option *ngFor="let ville of villes" [value]="ville">{{ ville }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Opérateur</label>
+        <select [(ngModel)]="filterOperator" (change)="onFilterChange()">
+          <option value="">Tous les opérateurs</option>
+          <option *ngFor="let op of operateurs" [value]="op">{{ op }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-actions">
+        <button class="btn btn-secondary" (click)="resetFilters()">
+          <i class="fas fa-undo"></i> Réinitialiser
+        </button>
+      </div>
+    </div>
+    
+    <div class="active-filters" *ngIf="filterStatus || filterCity || filterOperator">
+      <span class="filter-tag" *ngIf="filterStatus">
+        Statut: {{ getStatusText(filterStatus) }}
+        <i class="fas fa-times" (click)="filterStatus = ''; onFilterChange()"></i>
+      </span>
+      <span class="filter-tag" *ngIf="filterCity">
+        Ville: {{ filterCity }}
+        <i class="fas fa-times" (click)="filterCity = ''; onFilterChange()"></i>
+      </span>
+      <span class="filter-tag" *ngIf="filterOperator">
+        Opérateur: {{ filterOperator }}
+        <i class="fas fa-times" (click)="filterOperator = ''; onFilterChange()"></i>
+      </span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des bornes...</p>
+  </div>
+
+  <!-- Grille des bornes -->
+  <div class="bornes-grid" *ngIf="!loading">
+    <div class="borne-card" *ngFor="let borne of filteredBornes" 
+         [ngClass]="{
+           'card-disabled': !estDisponible(borne) && !borne.isOccupied,
+           'card-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
+           'card-active': estSessionUtilisateur(borne)
+         }">
+      
+      <div class="session-badge-corner" *ngIf="estSessionUtilisateur(borne)">
+        <span class="badge-active">
+          <i class="fas fa-bolt"></i> Votre recharge
+        </span>
+      </div>
+      
+      <div class="card-header">
+        <div class="card-title">
+          <h3>{{ borne.title || 'Borne #' + borne.id }}</h3>
+          <span class="borne-id">ID: {{ borne.id }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(borne.status)">
+          {{ getStatusText(borne.status) }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <div class="info-row">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>{{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}</span>
+        </div>
+        <div class="info-row">
+          <i class="fas fa-building"></i>
+          <span>{{ getOperatorName(borne.operator) }}</span>
+        </div>
+        <div class="info-row">
+          <i class="fas fa-bolt"></i>
+          <span>{{ borne.power || 'N/A' }} kW</span>
+        </div>
+        <div class="info-row">
+          <i class="fas fa-euro-sign"></i>
+          <span>{{ borne.usageCost || 'Gratuit' }}</span>
+        </div>
+        <div class="info-row" *ngIf="borne.connectorType">
+          <i class="fas fa-plug"></i>
+          <span>{{ borne.connectorType }}</span>
+        </div>
+      </div>
+
+      <div class="card-status">
+        <div class="occupation-indicator" [ngClass]="{
+          'status-available': estDisponible(borne),
+          'status-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
+          'status-my-session': estSessionUtilisateur(borne),
+          'status-unavailable': !estDisponible(borne) && !borne.isOccupied
+        }">
+          <span class="indicator-dot"></span>
+          <span class="indicator-text">
+            <ng-container *ngIf="estSessionUtilisateur(borne)">
+              <i class="fas fa-bolt"></i> Votre session active
+            </ng-container>
+            <ng-container *ngIf="estDisponible(borne)">Disponible</ng-container>
+            <ng-container *ngIf="borne.isOccupied && !estSessionUtilisateur(borne)">
+              Occupée
+            </ng-container>
+            <ng-container *ngIf="!estDisponible(borne) && !borne.isOccupied">
+              Indisponible
+            </ng-container>
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn btn-info" 
+                (click)="goToBorneDetail(borne.id)"
+                title="Voir les détails">
+          <i class="fas fa-info-circle"></i> Détails
+        </button>
+        
+        <button class="btn btn-secondary" 
+                (click)="openMaps(borne.latitude, borne.longitude)"
+                title="Ouvrir dans Maps">
+          <i class="fas fa-map"></i>
+        </button>
+
+        <button class="btn btn-success" 
+                *ngIf="estDisponible(borne) && !sessionActive"
+                (click)="demarrerRecharge(borne)"
+                [disabled]="loadingAction && selectedBorneId === borne.id">
+          <i class="fas fa-play" *ngIf="!(loadingAction && selectedBorneId === borne.id)"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id"></i>
+          Démarrer
+        </button>
+
+        <button class="btn btn-danger" 
+                *ngIf="estSessionUtilisateur(borne)"
+                (click)="arreterRecharge(borne)"
+                [disabled]="loadingAction && selectedBorneId === borne.id">
+          <i class="fas fa-stop" *ngIf="!(loadingAction && selectedBorneId === borne.id)"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id"></i>
+          Arrêter
+        </button>
+
+        <button class="btn btn-primary" 
+                *ngIf="borne.isOccupied && !estSessionUtilisateur(borne) && borne.sessionId"
+                (click)="voirSession(borne.sessionId!)">
+          <i class="fas fa-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="no-results" *ngIf="filteredBornes.length === 0">
+      <i class="fas fa-search"></i>
+      <h3>Aucune borne trouvée</h3>
+      <p>Essayez de modifier vos filtres de recherche</p>
+      <button class="btn btn-primary" (click)="resetFilters()">
+        Réinitialiser les filtres
+      </button>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1 && !loading">
+    <button class="btn btn-page" (click)="previousPage()" [disabled]="currentPage === 0">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    
+    <button class="btn btn-page" 
+            *ngFor="let page of getPages()"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+      {{ page + 1 }}
+    </button>
+    
+    <button class="btn btn-page" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>

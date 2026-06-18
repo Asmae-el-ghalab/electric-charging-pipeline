@@ -1,0 +1,100 @@
+<div class="map-page">
+  <!-- Barre de recherche et filtres -->
+  <div class="map-controls">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Rechercher une borne, ville ou opérateur..." 
+        [(ngModel)]="searchTerm"
+        (input)="filterMarkers()"
+        class="search-input">
+      <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()">✕</button>
+    </div>
+    
+    <div class="filter-group">
+      <select [(ngModel)]="statusFilter" (change)="filterMarkers()" class="status-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+      
+      <button class="locate-btn" (click)="locateUser()" title="Ma position">
+        📍 Ma position
+      </button>
+      
+      <button class="refresh-btn" (click)="refresh()" title="Actualiser">
+        🔄
+      </button>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des bornes de recharge...</p>
+    <p class="loading-count" *ngIf="filteredBornes.length > 0">{{ filteredBornes.length }} bornes chargées</p>
+  </div>
+
+  <!-- Carte -->
+  <div id="map" class="map-container"></div>
+
+  <!-- Panneau de statistiques -->
+  <div class="stats-panel" *ngIf="!loading && filteredBornes.length > 0">
+    <div class="stat-item">
+      <span class="stat-value">{{ filteredBornes.length }}</span>
+      <span class="stat-label">Bornes</span>
+      <span class="stat-icon">📍</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ operationalCount }}</span>
+      <span class="stat-label">Opérationnelles</span>
+      <span class="stat-icon">✅</span>
+    </div>
+    <div class="stat-item" *ngIf="userPosition">
+      <span class="stat-value">{{ getDistanceToNearest() }} km</span>
+      <span class="stat-label">Plus proche</span>
+      <span class="stat-icon">📏</span>
+    </div>
+  </div>
+
+  <!-- Légende -->
+  <div class="legend">
+    <h4>📌 Légende</h4>
+    <div class="legend-item">
+      <div class="marker-dot operational"></div>
+      <span>Opérationnelle</span>
+    </div>
+    <div class="legend-item">
+      <div class="marker-dot maintenance"></div>
+      <span>En maintenance</span>
+    </div>
+    <div class="legend-item">
+      <div class="marker-dot outofservice"></div>
+      <span>Hors service</span>
+    </div>
+    <div class="legend-item">
+      <div class="marker-dot planned"></div>
+      <span>Planifiée</span>
+    </div>
+    <div class="legend-item">
+      <div class="marker-dot occupied"></div>
+      <span>Occupée</span>
+    </div>
+  </div>
+
+  <!-- Message si aucun résultat -->
+  <div class="no-results" *ngIf="!loading && filteredBornes.length === 0">
+    <div class="no-results-icon">🔍</div>
+    <h3>Aucun résultat trouvé</h3>
+    <p>Aucune borne ne correspond à vos critères de recherche</p>
+    <button class="btn-reset" (click)="clearSearch(); statusFilter = ''; filterMarkers()">
+      Réinitialiser les filtres
+    </button>
+  </div>
+
+  <!-- Bouton retour haut de page -->
+  <button class="scroll-top" (click)="scrollToTop()" title="Haut de page" *ngIf="showScrollTop">
+    ↑
+  </button>
+</div>

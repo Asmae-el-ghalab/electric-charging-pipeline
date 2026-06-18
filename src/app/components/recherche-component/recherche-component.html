@@ -1,0 +1,207 @@
+<!-- recherche-component.component.html -->
+<div class="recherche-container">
+  
+  <!-- ==================== SECTION À PROPOS ==================== -->
+  <section class="about-section">
+    <div class="about-content">
+      <div class="about-text">
+        <h2>À propos de <span>ChargeMap Maroc</span></h2>
+        <p>La première plateforme dédiée aux bornes de recharge pour véhicules électriques au Maroc.</p>
+        <p>Notre mission est d'accélérer la transition énergétique au Maroc en facilitant l'accès aux bornes de recharge pour tous les propriétaires de véhicules électriques.</p>
+        <div class="about-features">
+          <div class="feature">
+            <span class="feature-icon">📍</span>
+            <span>Plus de 100 bornes recensées</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">🏙️</span>
+            <span>Couverture dans toutes les grandes villes</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">⚡</span>
+            <span>Informations en temps réel</span>
+          </div>
+        </div>
+        <button class="btn-about" (click)="learnMore()">En savoir plus →</button>
+      </div>
+      <div class="about-icon">
+        <div class="charging-icon">
+          <img src="/assets/img/logo.png" alt="ChargeMap Logo" class="charging-image">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== HEADER RECHERCHE ==================== -->
+  <div class="recherche-header">
+    <h1>🔍 Recherche de bornes de recharge</h1>
+    <p class="subtitle">Trouvez les bornes de recharge pour véhicules électriques au Maroc</p>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="search-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Rechercher par ville, opérateur ou adresse..." 
+        [(ngModel)]="searchTerm"
+        (input)="filterStations()"
+        class="search-input">
+      <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()">✕</button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Statut :</label>
+      <select [(ngModel)]="statusFilter" (change)="filterStations()" class="status-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+    
+    <button class="reset-btn" (click)="resetFilters()">
+      🔄 Réinitialiser les filtres
+    </button>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-panel" *ngIf="!isLoading && !loadingError && filteredBornes.length > 0">
+    <div class="stat-item">
+      <span class="stat-value">{{ filteredBornes.length }}</span>
+      <span class="stat-label">Bornes trouvées</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ operationalCount }}</span>
+      <span class="stat-label">Opérationnelles</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ totalPages }}</span>
+      <span class="stat-label">Pages</span>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement des bornes de recharge...</p>
+    <p class="loading-info">Connexion à l'API http://localhost:8081</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div class="error-message" *ngIf="loadingError && !isLoading">
+    <div class="error-icon">❌</div>
+    <h3>Erreur de connexion</h3>
+    <p>{{ errorMessage || 'Impossible de charger les données depuis le serveur.' }}</p>
+    <button class="retry-btn" (click)="retryConnection()">
+      🔄 Réessayer
+    </button>
+  </div>
+
+  <!-- Grille des bornes -->
+  <div class="bornes-grid" *ngIf="!isLoading && !loadingError && filteredBornes.length > 0">
+    <div class="borne-card" *ngFor="let borne of paginatedBornes" [class.disabled]="!estDisponible(borne)">
+      <div class="card-header">
+        <div class="borne-id">
+          {{ borne.title || 'Borne #' + borne.id }}
+        </div>
+        <div class="status-badge" [class]="getStatusClass(borne.status)">
+          {{ getStatusText(borne.status) }}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-icon">📍</span>
+          <span class="info-text">{{ borne.address || 'Adresse non disponible' }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="borne.city">
+          <span class="info-icon">🏙️</span>
+          <span class="info-text">{{ borne.city }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="borne.province">
+          <span class="info-icon">🗺️</span>
+          <span class="info-text">{{ borne.province }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="borne.operator">
+          <span class="info-icon">🏢</span>
+          <span class="info-text">{{ getOperatorName(borne.operator) }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="borne.usageCost">
+          <span class="info-icon">💰</span>
+          <span class="info-text" [class.free]="borne.usageCost === 'Gratuit'">
+            {{ getUsageCost(borne.usageCost) }}
+          </span>
+        </div>
+
+        <div class="info-row" *ngIf="borne.power">
+          <span class="info-icon">⚡</span>
+          <span class="info-text">{{ borne.power }} kW</span>
+        </div>
+
+        <div class="info-row" *ngIf="borne.isOccupied">
+          <span class="info-icon">🔴</span>
+          <span class="info-text occupied">Occupée</span>
+        </div>
+
+        <div class="info-row" *ngIf="!borne.isOccupied && borne.status === 'Operational'">
+          <span class="info-icon">🟢</span>
+          <span class="info-text available">Disponible</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-detail" (click)="goToBorneDetail(borne.id)">
+          🔍 Voir détails
+        </button>
+        
+        <button class="btn-maps" *ngIf="borne.latitude && borne.longitude" 
+                (click)="openMaps(borne.latitude, borne.longitude)">
+          🗺️ Google Maps
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message aucun résultat -->
+  <div class="no-results" *ngIf="!isLoading && !loadingError && filteredBornes.length === 0 && bornes.length > 0">
+    <div class="no-results-icon">🔍</div>
+    <h3>Aucun résultat trouvé</h3>
+    <p>Aucune borne ne correspond à vos critères de recherche</p>
+    <button class="btn-reset" (click)="resetFilters()">
+      Réinitialiser les filtres
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1 && !isLoading && !loadingError && filteredBornes.length > 0">
+    <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 0">
+      ← Précédent
+    </button>
+    
+    <div class="pages">
+      <button *ngFor="let page of getPages()" 
+              class="page-number" 
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+        {{ page + 1 }}
+      </button>
+    </div>
+    
+    <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">
+      Suivant →
+    </button>
+  </div>
+
+  <!-- Bouton retour haut de page -->
+  <button class="scroll-top" (click)="scrollToTop()" title="Haut de page" *ngIf="filteredBornes.length > 0">
+    ↑
+  </button>
+</div>

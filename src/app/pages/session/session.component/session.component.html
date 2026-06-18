@@ -1,0 +1,9 @@
+<div *ngIf="session; else loading">
+  <p>ID: {{ session.id }}</p>
+  <p>Status: {{ session.status }}</p>
+  <p>Borne: {{ session.borneId }}</p>
+</div>
+
+<ng-template #loading>
+  <p>Loading session...</p>
+</ng-template>
