@@ -247,7 +247,7 @@ export class AuthService {
       console.log('✅ Données utilisateur effacées');
     }
     
-    this.router.navigate(['/connexion']);
+    this.router.navigate(['/']);
   }
 
   isLoggedIn(): boolean {

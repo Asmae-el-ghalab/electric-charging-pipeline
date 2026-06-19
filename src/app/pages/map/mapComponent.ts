@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { timeout, catchError, retry } from 'rxjs/operators';
 import { of, TimeoutError } from 'rxjs';
-
+import { NavbarComponent } from '../../components/navbar/navbarComponent';
 declare var L: any;
 
 interface Borne {
@@ -33,7 +33,7 @@ interface PageResponse {
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NavbarComponent],
   templateUrl: './mapComponent.html',
   styleUrl: './mapComponent.css',
 })

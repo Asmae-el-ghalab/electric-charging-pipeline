@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, 
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { NavbarComponent } from '../../components/navbar/navbarComponent';
 
 @Component({
   selector: 'app-register',
@@ -13,7 +14,7 @@ import { AuthService } from '../../../services/auth.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,NavbarComponent
   ]
 })
 export class RegisterComponent implements OnInit {
