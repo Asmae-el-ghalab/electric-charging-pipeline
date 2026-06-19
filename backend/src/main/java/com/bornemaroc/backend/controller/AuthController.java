@@ -15,7 +15,6 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    // POST http://localhost:8080/api/auth/register
     @PostMapping("/register")
     public ResponseEntity<Utilisateur> register(
             @RequestBody Map<String, String> body) {
@@ -28,12 +27,11 @@ public class AuthController {
         return ResponseEntity.ok(u);
     }
 
-    // POST http://localhost:8080/api/auth/login
-    // Yrja3 token ✅
+    // ✅ CORRECTION : Type de retour Map<String, Object>
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
+    public ResponseEntity<Map<String, Object>> login(
             @RequestBody Map<String, String> body) {
-        Map<String, String> response = authService.login(
+        Map<String, Object> response = authService.login(
                 body.get("email"),
                 body.get("motDePasse")
         );

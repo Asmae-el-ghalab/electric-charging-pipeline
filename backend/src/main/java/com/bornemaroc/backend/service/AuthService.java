@@ -34,10 +34,7 @@ public class AuthService {
         Conducteur conducteur = new Conducteur();
         conducteur.setNom(nom);
         conducteur.setEmail(email);
-        // Bcrypt → encrypt password
-        conducteur.setMotDePasse(
-                passwordEncoder.encode(motDePasse)
-        );
+        conducteur.setMotDePasse(passwordEncoder.encode(motDePasse));
         conducteur.setVehicule(vehicule);
         conducteur.setDateInscription(new Date());
         conducteur.setRole(RoleUtilisateur.CONDUCTEUR);
@@ -46,9 +43,8 @@ public class AuthService {
         return utilisateurRepository.save(conducteur);
     }
 
-    // Login → return token
-    public Map<String, String> login(String email,
-                                     String motDePasse) {
+    // ✅ CORRECTION : Retourner Map<String, Object> avec l'ID
+    public Map<String, Object> login(String email, String motDePasse) {
         Utilisateur utilisateur = utilisateurRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
@@ -56,20 +52,20 @@ public class AuthService {
                 );
 
         // Check password bcrypt
-        if (!passwordEncoder.matches(
-                motDePasse,
-                utilisateur.getMotDePasse())) {
+        if (!passwordEncoder.matches(motDePasse, utilisateur.getMotDePasse())) {
             throw new RuntimeException("Mot de passe incorrect!");
         }
 
-        // Générer token
+        // Générer token avec ID
         String token = jwtUtil.generateToken(
                 utilisateur.getEmail(),
-                utilisateur.getRole().name()
+                utilisateur.getRole().name(),
+                utilisateur.getId()
         );
 
-        // Return token + info
-        Map<String, String> response = new HashMap<>();
+        // ✅ Retourner Map<String, Object> avec l'ID
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", utilisateur.getId());        // ✅ ID
         response.put("token", token);
         response.put("email", utilisateur.getEmail());
         response.put("role", utilisateur.getRole().name());

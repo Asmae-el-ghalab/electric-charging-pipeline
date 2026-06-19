@@ -46,6 +46,7 @@ public class SecurityConfig {
         // ✅ Autoriser les origines
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:4200",     // Angular dev
+            "http://localhost:55608",     // Angular dev
             "http://localhost:8080",     // Autre port
             "http://localhost:3000",     // React dev
             "https://votre-domaine.com"  // Production
