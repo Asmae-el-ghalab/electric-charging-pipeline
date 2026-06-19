@@ -33,6 +33,7 @@ export interface SessionRecharge {
   montantTotal?: number;
   status: 'ACTIVE' | 'TERMINEE' | 'ANNULEE';
   createdAt?: Date;
+    debut: string;  
   borneNom?: string;
   villeDepart?: string;
   villeArrivee?: string;

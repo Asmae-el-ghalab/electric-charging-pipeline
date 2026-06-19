@@ -1,130 +1,219 @@
-<div class="a-propos-page">
-  <!-- Section Héro -->
-  <section class="about-hero">
-    <div class="hero-content">
-      <h1>À propos de nous</h1>
-      <p>Découvrez qui nous sommes et comment nous révolutionnons la mobilité électrique au Maroc</p>
+<!-- src/app/pages/about/aboutComponent.html -->
+<div class="about-container">
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a routerLink="/" class="logo"></a>
+      <ul class="nav-links">
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a></li>
+        <li><a routerLink="/carte" routerLinkActive="active">Carte</a></li>
+        <li><a routerLink="/bornes" routerLinkActive="active">Bornes</a></li>
+        <li><a routerLink="/a-propos" routerLinkActive="active" class="active">À propos</a></li>
+        <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <a routerLink="/connexion" class="btn-outline">Connexion</a>
+        <a routerLink="/inscription" class="btn-primary">Inscription</a>
+      </div>
+      <button class="mobile-menu-btn" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">À propos de <span class="highlight">RechargeMaroc</span></h1>
+        <p class="hero-subtitle">Notre mission : accélérer la transition énergétique au Maroc</p>
+      </div>
     </div>
   </section>
 
   <!-- Section Mission -->
   <section class="mission-section">
     <div class="container">
-      <div class="mission-card">
-        <div class="mission-icon">🎯</div>
-        <h2>Notre mission</h2>
-        <p>Faciliter la mobilité électrique en offrant une plateforme centrale et intuitive pour localiser, réserver et recharger vos véhicules électriques en toute simplicité.</p>
+      <div class="mission-content">
+        <div class="mission-text">
+          <span class="section-tag">Notre Mission</span>
+          <h2>Rendre la mobilité électrique accessible à tous</h2>
+          <p>
+            RechargeMaroc est la première plateforme marocaine dédiée à la recherche 
+            et à la localisation de bornes de recharge pour véhicules électriques. 
+            Notre mission est de faciliter la transition énergétique en offrant une 
+            solution simple, fiable et complète pour les conducteurs de véhicules 
+            électriques au Maroc.
+          </p>
+          <div class="mission-stats">
+            <div class="stat-item">
+              <span class="stat-number" data-count="98">0</span>
+              <span class="stat-label">% de satisfaction</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" data-count="150">0</span>
+              <span class="stat-label">Bornes répertoriées</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" data-count="12">0</span>
+              <span class="stat-label">Villes couvertes</span>
+            </div>
+          </div>
+        </div>
+        <div class="mission-image"></div>
       </div>
     </div>
   </section>
 
-  <!-- Section Histoire -->
-  <section class="histoire-section">
+  <!-- Section Valeurs -->
+  <section class="values-section">
     <div class="container">
-      <div class="histoire-grid">
-        <div class="histoire-content">
-          <h2>Notre histoire</h2>
-          <p>Née en 2023 d'une vision commune pour un Maroc plus vert, notre plateforme est le fruit de la passion de passionnés de mobilité durable.</p>
-          <p>Face au développement croissant des véhicules électriques au Maroc, nous avons identifié le besoin crucial d'une solution centralisée pour localiser les bornes de recharge.</p>
-          <div class="chiffre-cle">
-            <div class="chiffre">+500</div>
-            <div class="label">Bornes référencées</div>
-          </div>
+      <div class="section-header">
+        <span class="section-tag">Nos Valeurs</span>
+        <h2>Ce qui nous anime</h2>
+        <p>Des valeurs qui guident chacune de nos actions</p>
+      </div>
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="value-icon">🌿</div>
+          <h3>Durabilité</h3>
+          <p>Nous croyons en un avenir plus vert et agissons chaque jour pour réduire l'empreinte carbone.</p>
         </div>
-        <div class="histoire-image">
-          <img src="assets/images/histoire.jpg" alt="Notre histoire">
+        <div class="value-card">
+          <div class="value-icon">💡</div>
+          <h3>Innovation</h3>
+          <p>Nous repoussons les limites de la technologie pour offrir des solutions toujours plus performantes.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🤝</div>
+          <h3>Confiance</h3>
+          <p>La transparence et la fiabilité sont au cœur de notre relation avec nos utilisateurs.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">👥</div>
+          <h3>Accessibilité</h3>
+          <p>La mobilité électrique doit être accessible à tous, sans exception.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Section Équipe -->
-  <section class="equipe-section">
+  <section class="team-section">
     <div class="container">
-      <h2>L'équipe derrière le projet</h2>
-      <p class="section-subtitle">Des passionnés unis par la même vision</p>
-      
-      <div class="equipe-grid">
-        <div class="membre-card" *ngFor="let membre of equipe">
-          <div class="membre-image">
-            <img [src]="membre.photo" [alt]="membre.nom">
-            <div class="social-links">
-              <a [href]="membre.linkedin" target="_blank">🔗</a>
-              <a [href]="membre.twitter" target="_blank">🐦</a>
+      <div class="section-header">
+        <span class="section-tag">Notre Équipe</span>
+        <h2>Des passionnés de la mobilité durable</h2>
+        <p>Une équipe dédiée à rendre la recharge électrique plus simple et accessible</p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card" *ngFor="let membre of equipe; let i = index">
+          <div class="team-photo" [class.photo-1]="i === 0" [class.photo-2]="i === 1" [class.photo-3]="i === 2" [class.photo-4]="i === 3">
+            <div class="team-social">
+              <a [href]="membre.linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+              <a [href]="membre.twitter" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                <i class="fab fa-twitter"></i>
+              </a>
             </div>
           </div>
-          <div class="membre-info">
+          <div class="team-info">
             <h3>{{ membre.nom }}</h3>
-            <p class="membre-role">{{ membre.role }}</p>
-            <p class="membre-bio">{{ membre.bio }}</p>
+            <span class="team-role">{{ membre.role }}</span>
+            <p>{{ membre.bio }}</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Section Valeurs -->
-  <section class="valeurs-section">
-    <div class="container">
-      <h2>Nos valeurs</h2>
-      <div class="valeurs-grid">
-        <div class="valeur-card">
-          <div class="valeur-icon">🌱</div>
-          <h3>Écologie</h3>
-          <p>Engagés pour un avenir plus propre et durable</p>
-        </div>
-        <div class="valeur-card">
-          <div class="valeur-icon">💡</div>
-          <h3>Innovation</h3>
-          <p>À la pointe des technologies de recharge</p>
-        </div>
-        <div class="valeur-card">
-          <div class="valeur-icon">🤝</div>
-          <h3>Transparence</h3>
-          <p>Des informations claires et fiables</p>
-        </div>
-        <div class="valeur-card">
-          <div class="valeur-icon">⚡</div>
-          <h3>Accessibilité</h3>
-          <p>La recharge pour tous, partout au Maroc</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section Statistiques -->
+  <!-- Section Chiffres Clés -->
   <section class="stats-section">
     <div class="container">
       <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-number" data-count="500">0</div>
-          <div class="stat-label">Bornes partenaires</div>
+        <div class="stats-card">
+          <span class="stats-number">500+</span>
+          <span class="stats-label">Utilisateurs actifs</span>
         </div>
-        <div class="stat-item">
-          <div class="stat-number" data-count="10000">0</div>
-          <div class="stat-label">Utilisateurs actifs</div>
+        <div class="stats-card">
+          <span class="stats-number">150+</span>
+          <span class="stats-label">Bornes répertoriées</span>
         </div>
-        <div class="stat-item">
-          <div class="stat-number" data-count="98">0</div>
-          <div class="stat-label">Satisfaction client</div>
+        <div class="stats-card">
+          <span class="stats-number">12</span>
+          <span class="stats-label">Villes marocaines</span>
         </div>
-        <div class="stat-item">
-          <div class="stat-number" data-count="24">0</div>
-          <div class="stat-label">Support 7j/7</div>
+        <div class="stats-card">
+          <span class="stats-number">98%</span>
+          <span class="stats-label">Satisfaction utilisateurs</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Section CTA -->
+  <!-- Section Appel à l'action -->
   <section class="cta-section">
     <div class="container">
-      <h2>Prêt à rejoindre l'aventure ?</h2>
-      <p>Rejoignez des milliers d'utilisateurs qui font confiance à notre plateforme</p>
-      <div class="cta-buttons">
-        <a routerLink="/inscription" class="btn-cta-primary">Créer un compte</a>
-        <a routerLink="/contact" class="btn-cta-secondary">Nous contacter</a>
+      <div class="cta-content">
+        <h2>Rejoignez la révolution électrique</h2>
+        <p>Contribuez à un avenir plus durable en utilisant nos bornes de recharge</p>
+        <div class="cta-buttons">
+          <a routerLink="/bornes" class="btn-primary">Voir les bornes</a>
+          <a routerLink="/inscription" class="btn-outline-white">S'inscrire</a>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a routerLink="/" class="logo"></a>
+          <p>La première plateforme marocaine de localisation des bornes de recharge pour véhicules électriques.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h4>Liens rapides</h4>
+          <ul>
+            <li><a routerLink="/">Accueil</a></li>
+            <li><a routerLink="/carte">Carte</a></li>
+            <li><a routerLink="/bornes">Bornes</a></li>
+            <li><a routerLink="/a-propos">À propos</a></li>
+            <li><a routerLink="/contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Ressources</h4>
+          <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Conditions d'utilisation</a></li>
+            <li><a href="#">Politique de confidentialité</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <ul>
+            <li><i class="fas fa-envelope"></i> contact@rechargemaroc.ma</li>
+            <li><i class="fas fa-phone"></i> +212 5 22 33 44 55</li>
+            <li><i class="fas fa-map-marker-alt"></i> Casablanca, Maroc</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 RechargeMaroc. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
 </div>

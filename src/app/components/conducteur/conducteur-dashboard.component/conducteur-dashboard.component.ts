@@ -51,8 +51,10 @@ interface Signalement {
 export class ConducteurDashboardComponent implements OnInit {
   
   private apiUrl = 'http://localhost:8081/api';
-  conducteurId: number = 0;
   
+  conducteurId: string | null = null;
+  conducteurIdNumber: number = 0;
+
   // ========== PROFIL ==========
   conducteur: Conducteur | null = null;
   profilEdit: any = {};
@@ -148,19 +150,32 @@ export class ConducteurDashboardComponent implements OnInit {
     }
     
     this.conducteurId = this.authService.getUserId();
+    this.conducteurIdNumber = this.authService.getUserIdAsNumber();
     
-    if (this.conducteurId === 0) {
+    console.log('📊 Conducteur ID (string):', this.conducteurId);
+    console.log('📊 Conducteur ID (number):', this.conducteurIdNumber);
+    
+    if (!this.conducteurId) {
       const token = this.authService.getToken();
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
-          this.conducteurId = payload.id || payload.userId || 6;
-        } catch (e) {}
+          const id = payload.id || payload.userId || payload.sub;
+          if (id) {
+            this.conducteurId = id.toString();
+            this.conducteurIdNumber = parseInt(id, 10);
+            console.log('✅ ID récupéré depuis le token:', this.conducteurId);
+          }
+        } catch (e) {
+          console.error('❌ Erreur décodage token:', e);
+        }
       }
     }
     
-    if (this.conducteurId === 0) {
-      this.conducteurId = 6;
+    if (!this.conducteurId) {
+      console.warn('⚠️ Aucun ID trouvé, utilisation de l\'ID 1 par défaut');
+      this.conducteurId = '1';
+      this.conducteurIdNumber = 1;
     }
     
     this.chargerToutesLesDonnees();
@@ -169,6 +184,10 @@ export class ConducteurDashboardComponent implements OnInit {
   // ========== CHARGEMENT DES DONNÉES ==========
   
   chargerToutesLesDonnees(): void {
+    if (!this.conducteurId) {
+      console.error('❌ Impossible de charger les données: conducteurId est null');
+      return;
+    }
     this.chargerProfil();
     this.chargerVehicules();
     this.chargerSignalements();
@@ -178,6 +197,8 @@ export class ConducteurDashboardComponent implements OnInit {
   // ========== PROFIL ==========
   
   chargerProfil(): void {
+    if (!this.conducteurId) return;
+    
     this.loading.profil = true;
     this.http.get<Conducteur>(`${this.apiUrl}/conducteur/profil/${this.conducteurId}`).subscribe({
       next: (data) => {
@@ -187,7 +208,7 @@ export class ConducteurDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erreur profil:', err);
+        console.error('❌ Erreur profil:', err);
         this.loading.profil = false;
         this.showMessage('Erreur chargement du profil', 'error');
         this.cdr.detectChanges();
@@ -210,6 +231,8 @@ export class ConducteurDashboardComponent implements OnInit {
   }
   
   sauvegarderProfil(): void {
+    if (!this.conducteurId) return;
+    
     this.http.put<Conducteur>(`${this.apiUrl}/conducteur/profil/${this.conducteurId}`, this.profilEdit).subscribe({
       next: (data) => {
         this.conducteur = data;
@@ -218,7 +241,7 @@ export class ConducteurDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error(err);
+        console.error('❌ Erreur mise à jour:', err);
         this.showMessage('❌ Erreur mise à jour', 'error');
       }
     });
@@ -227,6 +250,8 @@ export class ConducteurDashboardComponent implements OnInit {
   // ========== VEHICULES ==========
   
   chargerVehicules(): void {
+    if (!this.conducteurId) return;
+    
     this.loading.vehicules = true;
     this.http.get<Vehicule[]>(`${this.apiUrl}/conducteur/vehicules/${this.conducteurId}`).subscribe({
       next: (data) => {
@@ -235,7 +260,7 @@ export class ConducteurDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erreur véhicules:', err);
+        console.error('❌ Erreur véhicules:', err);
         this.loading.vehicules = false;
         this.showMessage('Erreur chargement des véhicules', 'error');
         this.cdr.detectChanges();
@@ -244,6 +269,11 @@ export class ConducteurDashboardComponent implements OnInit {
   }
   
   ajouterVehicule(): void {
+    if (!this.conducteurId) {
+      this.showMessage('❌ Conducteur non identifié', 'error');
+      return;
+    }
+    
     if (!this.nouveauVehicule.marque || !this.nouveauVehicule.modele || !this.nouveauVehicule.immatriculation) {
       this.showMessage('⚠️ Veuillez remplir tous les champs', 'warning');
       return;
@@ -264,7 +294,7 @@ export class ConducteurDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error(err);
+        console.error('❌ Erreur ajout véhicule:', err);
         this.showMessage('❌ Erreur ajout véhicule', 'error');
       }
     });
@@ -280,7 +310,7 @@ export class ConducteurDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error(err);
+        console.error('❌ Erreur suppression:', err);
         this.showMessage('❌ Erreur suppression', 'error');
       }
     });
@@ -295,16 +325,26 @@ export class ConducteurDashboardComponent implements OnInit {
   // ========== SIGNALEMENTS ==========
   
   chargerSignalements(): void {
+    if (!this.conducteurIdNumber) {
+      console.warn('⚠️ ID conducteur invalide pour charger les signalements');
+      this.signalements = [];
+      this.signalementsFiltres = [];
+      this.updateStats();
+      this.cdr.detectChanges();
+      return;
+    }
+    
     this.loading.signalements = true;
     this.cdr.detectChanges();
     
     this.http.get<Signalement[]>(`${this.apiUrl}/signalements`).subscribe({
       next: (data) => {
-        this.signalements = data.filter(s => s.conducteur?.id === this.conducteurId);
+        this.signalements = data.filter(s => s.conducteur?.id === this.conducteurIdNumber);
         this.signalementsFiltres = [...this.signalements];
         this.updateStats();
         this.loading.signalements = false;
         this.cdr.detectChanges();
+        console.log(`✅ ${this.signalements.length} signalements chargés`);
       },
       error: (err) => {
         console.error('❌ Erreur chargement signalements:', err);
@@ -360,6 +400,11 @@ export class ConducteurDashboardComponent implements OnInit {
     this.submitted = true;
     this.cdr.detectChanges();
     
+    if (!this.conducteurId) {
+      this.showMessage('❌ Conducteur non identifié', 'error');
+      return;
+    }
+    
     if (!this.nouveauSignalement.borneId) {
       this.showMessage('⚠️ Veuillez entrer l\'ID de la borne', 'warning');
       return;
@@ -380,7 +425,7 @@ export class ConducteurDashboardComponent implements OnInit {
     this.cdr.detectChanges();
     
     const signalementData = {
-      conducteurId: this.conducteurId.toString(),
+      conducteurId: this.conducteurId,
       borneId: this.nouveauSignalement.borneId.toString(),
       type: this.nouveauSignalement.type,
       description: this.nouveauSignalement.description.trim()
@@ -397,12 +442,21 @@ export class ConducteurDashboardComponent implements OnInit {
         this.isSubmitting = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('❌ Erreur:', err);
+      error: (err: HttpErrorResponse) => {
+        console.error('❌ Erreur envoi signalement:', err);
         this.loading.signalements = false;
         this.isSubmitting = false;
         this.cdr.detectChanges();
-        this.showMessage('❌ Erreur lors de l\'envoi', 'error');
+        
+        let errorMsg = '❌ Erreur lors de l\'envoi';
+        if (err.status === 400) {
+          errorMsg = '❌ Données invalides. Vérifiez les informations saisies.';
+        } else if (err.status === 404) {
+          errorMsg = '❌ Borne non trouvée. Vérifiez l\'ID.';
+        } else if (err.status === 409) {
+          errorMsg = '❌ Un signalement pour cette borne existe déjà.';
+        }
+        this.showMessage(errorMsg, 'error');
       }
     });
   }
@@ -421,13 +475,34 @@ export class ConducteurDashboardComponent implements OnInit {
   
   // ========== TRAJETS ==========
   
+  // ✅ CORRECTION : Convertir l'ID en nombre
   chargerTrajets(): void {
+    if (!this.conducteurId) {
+      console.warn('⚠️ ID conducteur invalide pour charger les trajets');
+      this.trajets = [];
+      this.trajetsFiltres = [];
+      this.loadingTrajets = false;
+      this.cdr.detectChanges();
+      return;
+    }
+    
     this.loadingTrajets = true;
     this.cdr.detectChanges();
     
-    this.stationsService.getTrajetsByConducteur(this.conducteurId).subscribe({
+    // ✅ Convertir en nombre
+    const conducteurIdNumber = parseInt(this.conducteurId, 10);
+    
+    if (isNaN(conducteurIdNumber) || conducteurIdNumber <= 0) {
+      console.error('❌ ID conducteur invalide:', this.conducteurId);
+      this.showMessage('❌ ID conducteur invalide', 'error');
+      this.loadingTrajets = false;
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    this.stationsService.getTrajetsByConducteur(conducteurIdNumber).subscribe({
       next: (data) => {
-        this.trajets = data;
+        this.trajets = data || [];
         this.trajetsFiltres = [...this.trajets];
         this.updateTrajetsStats();
         this.loadingTrajets = false;
@@ -492,7 +567,7 @@ export class ConducteurDashboardComponent implements OnInit {
       case 'TERMINE': return '✅ Terminé';
       case 'EN_COURS': return '🔄 En cours';
       case 'ANNULE': return '❌ Annulé';
-      default: return status;
+      default: return status || 'Inconnu';
     }
   }
   
@@ -512,7 +587,7 @@ export class ConducteurDashboardComponent implements OnInit {
       case 'EN_COURS': return '🔄 En cours';
       case 'RESOLU': return '✅ Résolu';
       case 'REJETE': return '❌ Rejeté';
-      default: return statut;
+      default: return statut || 'Inconnu';
     }
   }
   
@@ -521,7 +596,7 @@ export class ConducteurDashboardComponent implements OnInit {
       case 'PANNE': return '🔧 Panne technique';
       case 'PROBLEME_FACTURATION': return '💰 Problème de facturation';
       case 'AUTRE': return '📝 Autre problème';
-      default: return type;
+      default: return type || 'Inconnu';
     }
   }
   
@@ -534,14 +609,19 @@ export class ConducteurDashboardComponent implements OnInit {
   
   formatDateTime(date: string | Date): string {
     if (!date) return 'N/A';
-    const d = new Date(date);
-    return d.toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return 'Date invalide';
+      return d.toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return 'Date invalide';
+    }
   }
   
   // ========== TABS ==========

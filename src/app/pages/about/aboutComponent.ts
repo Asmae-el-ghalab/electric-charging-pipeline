@@ -23,7 +23,7 @@ export class AboutComponent implements OnInit {
       nom: 'Sara El Fassi',
       role: 'Directrice Technique',
       bio: 'Ingénieur passionné par les nouvelles technologies et l\'innovation verte.',
-      photo: 'assets/img/peronne2.jpg',
+      photo: '/assets/img/peronne2.jpg',
       linkedin: 'https://linkedin.com/in/sara',
       twitter: 'https://twitter.com/sara'
     },

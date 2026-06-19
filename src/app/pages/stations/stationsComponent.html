@@ -1,38 +1,119 @@
 <!-- src/app/pages/stations/stationsComponent.html -->
 <div class="stations-container">
-  <!-- Header -->
-  <div class="stations-header">
-    <div class="header-left">
-      <h1>⚡ Bornes de Recharge</h1>
-      <span class="total-info">{{ totalElements }} bornes disponibles</span>
+  <!-- Navigation -->
+ <section>
+    <app-navbar></app-navbar>
+ </section>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <!-- Video Background -->
+    <video #heroVideo class="hero-video-bg" autoplay loop muted playsinline>
+      <source src='/assets/img/vv.mp4' type="video/mp4">
+      <source src='/assets/img/vv.mp4' type="video/mp4">
+      Votre navigateur ne supporte pas la vidéo.
+    </video>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Trouvez facilement les bornes de recharge <span class="highlight">au Maroc</span>
+        </h1>
+        <p class="hero-subtitle">
+          Accueil > Bornes
+        </p>
+      </div>
     </div>
-    <div class="header-actions">
-      <div class="session-indicator" *ngIf="sessionActive && sessionVerifiee">
-        <span class="session-badge active">
-          <i class="fas fa-bolt"></i>
-          Recharge en cours
+  </section>
+
+  <!-- En-tête principal -->
+  <header class="stations-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <span aria-hidden="true">⚡</span>
+      </div>
+      <div class="header-content">
+        <h1>Bornes de Recharge</h1>
+        <span class="total-info">
+          <i class="fas fa-charging-station" aria-hidden="true"></i>
+          {{ totalElements }} bornes disponibles
         </span>
-        <button class="btn btn-sm btn-primary" (click)="voirSession(sessionActive.id)">
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Indicateur de session active -->
+      <div class="session-indicator" *ngIf="sessionActive && sessionVerifiee">
+        <div class="session-indicator-content">
+          <span class="session-badge active">
+            <i class="fas fa-bolt" aria-hidden="true"></i>
+            Recharge en cours
+            <ng-container *ngIf="sessionActive.debut">
+              <span class="session-timer">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                {{ getSessionDuration(sessionActive.debut) }}
+              </span>
+            </ng-container>
+          </span>
+        </div>
+        <button 
+          class="btn btn-sm btn-primary" 
+          (click)="voirSession(sessionActive.id)"
+          aria-label="Voir la session en cours">
+          <i class="fas fa-eye" aria-hidden="true"></i>
           Voir
         </button>
       </div>
       
-      <button class="btn btn-filter" (click)="toggleFilters()">
-        <i class="fas fa-filter"></i>
+      <!-- Bouton filtres -->
+      <button 
+        class="btn btn-filter" 
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="showFilters"
+        aria-controls="filters-panel"
+        [class.active]="showFilters">
+        <i class="fas fa-sliders-h" aria-hidden="true"></i>
         {{ showFilters ? 'Masquer filtres' : 'Filtres' }}
-        <span class="filter-count" *ngIf="filterStatus || filterCity || filterOperator">
+        <span 
+          class="filter-count" 
+          *ngIf="filterStatus || filterCity || filterOperator"
+          aria-label="Nombre de filtres actifs">
           {{ (filterStatus ? 1 : 0) + (filterCity ? 1 : 0) + (filterOperator ? 1 : 0) }}
         </span>
       </button>
-    </div>
-  </div>
 
-  <!-- Filtres -->
-  <div class="filters-panel" *ngIf="showFilters">
+      <!-- Bouton rafraîchir -->
+      <button 
+        class="btn btn-refresh" 
+        (click)="refreshData()"
+        [disabled]="isRefreshing"
+        aria-label="Rafraîchir les données">
+        <i class="fas fa-sync" [class.spinning]="isRefreshing" aria-hidden="true"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Panneau des filtres -->
+  <div 
+    id="filters-panel"
+    class="filters-panel" 
+    *ngIf="showFilters"
+    role="search"
+    aria-label="Filtres de recherche">
+    
     <div class="filters-grid">
+      <!-- Filtre Statut -->
       <div class="filter-group">
-        <label>Statut</label>
-        <select [(ngModel)]="filterStatus" (change)="onFilterChange()">
+        <label for="filter-status">
+          <i class="fas fa-circle" aria-hidden="true"></i>
+          Statut
+        </label>
+        <select 
+          id="filter-status"
+          [(ngModel)]="filterStatus" 
+          (change)="onFilterChange()"
+          aria-label="Filtrer par statut">
           <option value="">Tous les statuts</option>
           <option *ngFor="let status of statusList" [value]="status">
             {{ getStatusText(status) }}
@@ -40,185 +121,338 @@
         </select>
       </div>
       
+      <!-- Filtre Ville -->
       <div class="filter-group">
-        <label>Ville</label>
-        <select [(ngModel)]="filterCity" (change)="onFilterChange()">
+        <label for="filter-city">
+          <i class="fas fa-city" aria-hidden="true"></i>
+          Ville
+        </label>
+        <select 
+          id="filter-city"
+          [(ngModel)]="filterCity" 
+          (change)="onFilterChange()"
+          aria-label="Filtrer par ville">
           <option value="">Toutes les villes</option>
           <option *ngFor="let ville of villes" [value]="ville">{{ ville }}</option>
         </select>
       </div>
       
+      <!-- Filtre Opérateur -->
       <div class="filter-group">
-        <label>Opérateur</label>
-        <select [(ngModel)]="filterOperator" (change)="onFilterChange()">
+        <label for="filter-operator">
+          <i class="fas fa-building" aria-hidden="true"></i>
+          Opérateur
+        </label>
+        <select 
+          id="filter-operator"
+          [(ngModel)]="filterOperator" 
+          (change)="onFilterChange()"
+          aria-label="Filtrer par opérateur">
           <option value="">Tous les opérateurs</option>
           <option *ngFor="let op of operateurs" [value]="op">{{ op }}</option>
         </select>
       </div>
       
+      <!-- Actions filtres -->
       <div class="filter-actions">
-        <button class="btn btn-secondary" (click)="resetFilters()">
-          <i class="fas fa-undo"></i> Réinitialiser
+        <button 
+          class="btn btn-secondary" 
+          (click)="resetFilters()"
+          aria-label="Réinitialiser tous les filtres">
+          <i class="fas fa-undo" aria-hidden="true"></i>
+          Réinitialiser
         </button>
       </div>
     </div>
     
-    <div class="active-filters" *ngIf="filterStatus || filterCity || filterOperator">
-      <span class="filter-tag" *ngIf="filterStatus">
+    <!-- Filtres actifs -->
+    <div 
+      class="active-filters" 
+      *ngIf="filterStatus || filterCity || filterOperator"
+      role="list"
+      aria-label="Filtres actifs">
+      
+      <span class="filter-tag" *ngIf="filterStatus" role="listitem">
+        <i class="fas fa-circle" aria-hidden="true"></i>
         Statut: {{ getStatusText(filterStatus) }}
-        <i class="fas fa-times" (click)="filterStatus = ''; onFilterChange()"></i>
+        <button 
+          class="filter-remove"
+          (click)="filterStatus = ''; onFilterChange()"
+          aria-label="Supprimer le filtre statut">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
       </span>
-      <span class="filter-tag" *ngIf="filterCity">
+      
+      <span class="filter-tag" *ngIf="filterCity" role="listitem">
+        <i class="fas fa-city" aria-hidden="true"></i>
         Ville: {{ filterCity }}
-        <i class="fas fa-times" (click)="filterCity = ''; onFilterChange()"></i>
+        <button 
+          class="filter-remove"
+          (click)="filterCity = ''; onFilterChange()"
+          aria-label="Supprimer le filtre ville">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
       </span>
-      <span class="filter-tag" *ngIf="filterOperator">
+      
+      <span class="filter-tag" *ngIf="filterOperator" role="listitem">
+        <i class="fas fa-building" aria-hidden="true"></i>
         Opérateur: {{ filterOperator }}
-        <i class="fas fa-times" (click)="filterOperator = ''; onFilterChange()"></i>
+        <button 
+          class="filter-remove"
+          (click)="filterOperator = ''; onFilterChange()"
+          aria-label="Supprimer le filtre opérateur">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </span>
+    </div>
+
+    <!-- Résultats du filtrage -->
+    <div class="filter-results" *ngIf="filteredBornes.length > 0">
+      <span class="result-count">
+        <i class="fas fa-list" aria-hidden="true"></i>
+        {{ filteredBornes.length }} borne{{ filteredBornes.length > 1 ? 's' : '' }} trouvée{{ filteredBornes.length > 1 ? 's' : '' }}
       </span>
     </div>
   </div>
 
-  <!-- Loading -->
-  <div class="loading-container" *ngIf="loading">
-    <div class="spinner"></div>
+  <!-- État de chargement -->
+  <div class="loading-container" *ngIf="loading" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
     <p>Chargement des bornes...</p>
   </div>
 
   <!-- Grille des bornes -->
-  <div class="bornes-grid" *ngIf="!loading">
-    <div class="borne-card" *ngFor="let borne of filteredBornes" 
-         [ngClass]="{
-           'card-disabled': !estDisponible(borne) && !borne.isOccupied,
-           'card-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
-           'card-active': estSessionUtilisateur(borne)
-         }">
+  <section 
+    class="bornes-grid" 
+    *ngIf="!loading"
+    aria-label="Liste des bornes de recharge">
+    
+    <!-- Carte de borne -->
+    <article 
+      class="borne-card" 
+      *ngFor="let borne of filteredBornes; let i = index" 
+      [ngClass]="{
+        'card-disabled': !estDisponible(borne) && !borne.isOccupied,
+        'card-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
+        'card-active': estSessionUtilisateur(borne),
+        'card-available': estDisponible(borne)
+      }"
+      [attr.aria-label]="'Borne ' + (borne.title || borne.id)"
+      [style.animation-delay]="(i * 0.05) + 's'">
       
+      <!-- Badge session utilisateur -->
       <div class="session-badge-corner" *ngIf="estSessionUtilisateur(borne)">
         <span class="badge-active">
-          <i class="fas fa-bolt"></i> Votre recharge
+          <i class="fas fa-bolt" aria-hidden="true"></i>
+          Votre recharge
+          <ng-container *ngIf="sessionActive && sessionActive.debut">
+            <span class="badge-timer">
+              {{ getSessionDuration(sessionActive.debut) }}
+            </span>
+          </ng-container>
         </span>
       </div>
       
-      <div class="card-header">
+      <!-- En-tête de la carte -->
+      <header class="card-header">
         <div class="card-title">
           <h3>{{ borne.title || 'Borne #' + borne.id }}</h3>
-          <span class="borne-id">ID: {{ borne.id }}</span>
+          <span class="borne-id">
+            <i class="fas fa-hashtag" aria-hidden="true"></i>
+            {{ borne.id }}
+          </span>
         </div>
-        <span class="status-badge" [ngClass]="getStatusClass(borne.status)">
+        <span 
+          class="status-badge" 
+          [ngClass]="getStatusClass(borne.status)"
+          [attr.aria-label]="'Statut: ' + getStatusText(borne.status)">
+          <span class="status-dot" aria-hidden="true"></span>
           {{ getStatusText(borne.status) }}
         </span>
-      </div>
+      </header>
 
+      <!-- Corps de la carte -->
       <div class="card-body">
         <div class="info-row">
-          <i class="fas fa-map-marker-alt"></i>
-          <span>{{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}</span>
+          <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+          <span class="info-text" title="{{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}">
+            {{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="borne.operator">
+          <i class="fas fa-building" aria-hidden="true"></i>
+          <span class="info-text">{{ getOperatorName(borne.operator) }}</span>
         </div>
         <div class="info-row">
-          <i class="fas fa-building"></i>
-          <span>{{ getOperatorName(borne.operator) }}</span>
+          <i class="fas fa-bolt" aria-hidden="true"></i>
+          <span class="info-text">{{ borne.power || 'N/A' }} kW</span>
         </div>
         <div class="info-row">
-          <i class="fas fa-bolt"></i>
-          <span>{{ borne.power || 'N/A' }} kW</span>
-        </div>
-        <div class="info-row">
-          <i class="fas fa-euro-sign"></i>
-          <span>{{ borne.usageCost || 'Gratuit' }}</span>
+          <i class="fas fa-euro-sign" aria-hidden="true"></i>
+          <span class="info-text">{{ borne.usageCost || 'Gratuit' }}</span>
         </div>
         <div class="info-row" *ngIf="borne.connectorType">
-          <i class="fas fa-plug"></i>
-          <span>{{ borne.connectorType }}</span>
+          <i class="fas fa-plug" aria-hidden="true"></i>
+          <span class="info-text">{{ borne.connectorType }}</span>
         </div>
       </div>
 
+      <!-- Indicateur de disponibilité -->
       <div class="card-status">
-        <div class="occupation-indicator" [ngClass]="{
-          'status-available': estDisponible(borne),
-          'status-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
-          'status-my-session': estSessionUtilisateur(borne),
-          'status-unavailable': !estDisponible(borne) && !borne.isOccupied
-        }">
-          <span class="indicator-dot"></span>
+        <div 
+          class="occupation-indicator" 
+          [ngClass]="{
+            'status-available': estDisponible(borne),
+            'status-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
+            'status-my-session': estSessionUtilisateur(borne),
+            'status-unavailable': !estDisponible(borne) && !borne.isOccupied
+          }">
+          <span class="indicator-dot" aria-hidden="true"></span>
           <span class="indicator-text">
             <ng-container *ngIf="estSessionUtilisateur(borne)">
-              <i class="fas fa-bolt"></i> Votre session active
+              <i class="fas fa-bolt" aria-hidden="true"></i>
+              Votre session active
+              <ng-container *ngIf="sessionActive && sessionActive.debut">
+                <span class="indicator-timer">
+                  {{ getSessionDuration(sessionActive.debut) }}
+                </span>
+              </ng-container>
             </ng-container>
-            <ng-container *ngIf="estDisponible(borne)">Disponible</ng-container>
+            <ng-container *ngIf="estDisponible(borne)">
+              <i class="fas fa-check-circle" aria-hidden="true"></i>
+              Disponible
+            </ng-container>
             <ng-container *ngIf="borne.isOccupied && !estSessionUtilisateur(borne)">
+              <i class="fas fa-clock" aria-hidden="true"></i>
               Occupée
             </ng-container>
             <ng-container *ngIf="!estDisponible(borne) && !borne.isOccupied">
+              <i class="fas fa-times-circle" aria-hidden="true"></i>
               Indisponible
             </ng-container>
           </span>
         </div>
       </div>
 
+      <!-- Actions -->
       <div class="card-actions">
-        <button class="btn btn-info" 
-                (click)="goToBorneDetail(borne.id)"
-                title="Voir les détails">
-          <i class="fas fa-info-circle"></i> Détails
+        <button 
+          class="btn btn-info" 
+          (click)="goToBorneDetail(borne.id)"
+          [attr.aria-label]="'Voir les détails de la borne ' + (borne.title || borne.id)"
+          title="Voir les détails">
+          <i class="fas fa-info-circle" aria-hidden="true"></i>
+          Détails
         </button>
         
-        <button class="btn btn-secondary" 
-                (click)="openMaps(borne.latitude, borne.longitude)"
-                title="Ouvrir dans Maps">
-          <i class="fas fa-map"></i>
+        <button 
+          class="btn btn-secondary" 
+          (click)="openMaps(borne.latitude, borne.longitude)"
+          [attr.aria-label]="'Ouvrir dans Maps pour la borne ' + (borne.title || borne.id)"
+          title="Ouvrir dans Maps">
+          <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+          Maps
         </button>
 
-        <button class="btn btn-success" 
-                *ngIf="estDisponible(borne) && !sessionActive"
-                (click)="demarrerRecharge(borne)"
-                [disabled]="loadingAction && selectedBorneId === borne.id">
-          <i class="fas fa-play" *ngIf="!(loadingAction && selectedBorneId === borne.id)"></i>
-          <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id"></i>
+        <button 
+          class="btn btn-success" 
+          *ngIf="estDisponible(borne) && !sessionActive"
+          (click)="demarrerRecharge(borne)"
+          [disabled]="loadingAction && selectedBorneId === borne.id"
+          [attr.aria-label]="'Démarrer la recharge sur la borne ' + (borne.title || borne.id)"
+          title="Démarrer la recharge">
+          <i class="fas fa-play" *ngIf="!(loadingAction && selectedBorneId === borne.id)" aria-hidden="true"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id" aria-hidden="true"></i>
           Démarrer
         </button>
 
-        <button class="btn btn-danger" 
-                *ngIf="estSessionUtilisateur(borne)"
-                (click)="arreterRecharge(borne)"
-                [disabled]="loadingAction && selectedBorneId === borne.id">
-          <i class="fas fa-stop" *ngIf="!(loadingAction && selectedBorneId === borne.id)"></i>
-          <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id"></i>
+        <button 
+          class="btn btn-danger" 
+          *ngIf="estSessionUtilisateur(borne)"
+          (click)="arreterRecharge(borne)"
+          [disabled]="loadingAction && selectedBorneId === borne.id"
+          [attr.aria-label]="'Arrêter la recharge sur la borne ' + (borne.title || borne.id)"
+          title="Arrêter la recharge">
+          <i class="fas fa-stop" *ngIf="!(loadingAction && selectedBorneId === borne.id)" aria-hidden="true"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id" aria-hidden="true"></i>
           Arrêter
         </button>
 
-        <button class="btn btn-primary" 
-                *ngIf="borne.isOccupied && !estSessionUtilisateur(borne) && borne.sessionId"
-                (click)="voirSession(borne.sessionId!)">
-          <i class="fas fa-eye"></i>
+        <button 
+          class="btn btn-primary" 
+          *ngIf="borne.isOccupied && !estSessionUtilisateur(borne) && borne.sessionId"
+          (click)="voirSession(borne.sessionId!)"
+          [attr.aria-label]="'Voir la session de la borne ' + (borne.title || borne.id)"
+          title="Voir la session">
+          <i class="fas fa-eye" aria-hidden="true"></i>
+        </button>
+      </div>
+    </article>
+
+    <!-- Aucun résultat -->
+    <div class="no-results" *ngIf="filteredBornes.length === 0" role="status">
+      <div class="no-results-icon">
+        <i class="fas fa-search" aria-hidden="true"></i>
+      </div>
+      <h3>Aucune borne trouvée</h3>
+      <p>Essayez de modifier vos filtres de recherche</p>
+      <div class="no-results-actions">
+        <button class="btn btn-primary" (click)="resetFilters()">
+          <i class="fas fa-undo" aria-hidden="true"></i>
+          Réinitialiser les filtres
+        </button>
+        <button class="btn btn-secondary" (click)="loadBornes()">
+          <i class="fas fa-sync" aria-hidden="true"></i>
+          Recharger
         </button>
       </div>
     </div>
+  </section>
 
-    <div class="no-results" *ngIf="filteredBornes.length === 0">
-      <i class="fas fa-search"></i>
-      <h3>Aucune borne trouvée</h3>
-      <p>Essayez de modifier vos filtres de recherche</p>
-      <button class="btn btn-primary" (click)="resetFilters()">
-        Réinitialiser les filtres
-      </button>
-    </div>
-  </div>
-
-  <div class="pagination" *ngIf="totalPages > 1 && !loading">
-    <button class="btn btn-page" (click)="previousPage()" [disabled]="currentPage === 0">
-      <i class="fas fa-chevron-left"></i>
+  <!-- Pagination -->
+  <nav 
+    class="pagination" 
+    *ngIf="totalPages > 1 && !loading"
+    aria-label="Pagination des bornes">
+    
+    <button 
+      class="btn btn-page" 
+      (click)="previousPage()" 
+      [disabled]="currentPage === 0"
+      aria-label="Page précédente">
+      <i class="fas fa-chevron-left" aria-hidden="true"></i>
     </button>
     
-    <button class="btn btn-page" 
-            *ngFor="let page of getPages()"
-            [class.active]="page === currentPage"
-            (click)="goToPage(page)">
+    <button 
+      class="btn btn-page" 
+      *ngFor="let page of getPages()"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)"
+      [attr.aria-label]="'Aller à la page ' + (page + 1)"
+      [attr.aria-current]="page === currentPage ? 'page' : null">
       {{ page + 1 }}
     </button>
     
-    <button class="btn btn-page" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
-      <i class="fas fa-chevron-right"></i>
+    <button 
+      class="btn btn-page" 
+      (click)="nextPage()" 
+      [disabled]="currentPage >= totalPages - 1"
+      aria-label="Page suivante">
+      <i class="fas fa-chevron-right" aria-hidden="true"></i>
     </button>
+  </nav>
+
+  <!-- Statistiques de chargement -->
+  <div class="stats-footer" *ngIf="!loading && filteredBornes.length > 0">
+    <span class="stats-text">
+      Affichage de {{ filteredBornes.length }} borne{{ filteredBornes.length > 1 ? 's' : '' }}
+      <span *ngIf="totalElements > filteredBornes.length">
+        sur {{ totalElements }} au total
+      </span>
+    </span>
+    <span class="last-update" *ngIf="lastUpdate">
+      <i class="fas fa-clock" aria-hidden="true"></i>
+      Dernière mise à jour: {{ lastUpdate | date:'HH:mm:ss' }}
+    </span>
   </div>
 </div>
