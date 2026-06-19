@@ -1,11 +1,45 @@
 <!-- src/app/pages/stations/stationsComponent.html -->
 <div class="stations-container">
-  <!-- Navigation -->
- <section>
-    <app-navbar></app-navbar>
- </section>
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <nav class="navbar" [class.scrolled]="isScrolled">
+    <div class="nav-container">
+      <!-- Logo -->
+      <a routerLink="/" class="logo">
+        <span class="logo-icon"></span>
+        
+      </a>
 
-  <!-- Hero Section -->
+      <!-- Liens de navigation -->
+      <ul class="nav-links" [class.active]="menuOpen">
+        <li>
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
+        </li>
+        <li><a routerLink="/recherche" routerLinkActive="active">Recherche</a></li>
+        <li><a routerLink="/stations" routerLinkActive="active" class="active">Bornes</a></li>
+        <li><a routerLink="/a-propos" routerLinkActive="active">À propos</a></li>
+        <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
+      </ul>
+
+      <!-- Boutons auth -->
+      <div class="auth-buttons">
+        <a routerLink="/connexion" class="btn-outline">Connexion</a>
+        <a routerLink="/inscription" class="btn-primary">Inscription</a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button class="mobile-menu-btn" (click)="toggleMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       HERO SECTION
+       ============================================================ -->
   <section class="hero">
     <!-- Video Background -->
     <video #heroVideo class="hero-video-bg" autoplay loop muted playsinline>
@@ -27,7 +61,9 @@
     </div>
   </section>
 
-  <!-- En-tête principal -->
+  <!-- ============================================================
+       STATIONS HEADER
+       ============================================================ -->
   <header class="stations-header">
     <div class="header-left">
       <div class="header-icon">
@@ -94,7 +130,9 @@
     </div>
   </header>
 
-  <!-- Panneau des filtres -->
+  <!-- ============================================================
+       PANNEAU DES FILTRES
+       ============================================================ -->
   <div 
     id="filters-panel"
     class="filters-panel" 
@@ -215,13 +253,17 @@
     </div>
   </div>
 
-  <!-- État de chargement -->
+  <!-- ============================================================
+       ÉTAT DE CHARGEMENT
+       ============================================================ -->
   <div class="loading-container" *ngIf="loading" role="status" aria-live="polite">
     <div class="spinner" aria-hidden="true"></div>
     <p>Chargement des bornes...</p>
   </div>
 
-  <!-- Grille des bornes -->
+  <!-- ============================================================
+       GRILLE DES BORNES
+       ============================================================ -->
   <section 
     class="bornes-grid" 
     *ngIf="!loading"
@@ -409,7 +451,9 @@
     </div>
   </section>
 
-  <!-- Pagination -->
+  <!-- ============================================================
+       PAGINATION
+       ============================================================ -->
   <nav 
     class="pagination" 
     *ngIf="totalPages > 1 && !loading"
@@ -442,7 +486,9 @@
     </button>
   </nav>
 
-  <!-- Statistiques de chargement -->
+  <!-- ============================================================
+       STATISTIQUES DE CHARGEMENT
+       ============================================================ -->
   <div class="stats-footer" *ngIf="!loading && filteredBornes.length > 0">
     <span class="stats-text">
       Affichage de {{ filteredBornes.length }} borne{{ filteredBornes.length > 1 ? 's' : '' }}
@@ -455,4 +501,65 @@
       Dernière mise à jour: {{ lastUpdate | date:'HH:mm:ss' }}
     </span>
   </div>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Brand -->
+        <div class="footer-brand">
+          <a routerLink="/" class="logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">RechargeMaroc</span>
+          </a>
+          <p>La première plateforme marocaine de localisation des bornes de recharge pour véhicules électriques.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+
+        <!-- Liens rapides -->
+        <div class="footer-links">
+          <h4>Liens rapides</h4>
+          <ul>
+            <li><a routerLink="/">Accueil</a></li>
+            <li><a routerLink="/recherche">Recherche</a></li>
+            <li><a routerLink="/stations">Bornes</a></li>
+            <li><a routerLink="/a-propos">À propos</a></li>
+            <li><a routerLink="/contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Ressources -->
+        <div class="footer-links">
+          <h4>Ressources</h4>
+          <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Conditions d'utilisation</a></li>
+            <li><a href="#">Politique de confidentialité</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact -->
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <ul>
+            <li><i class="fas fa-envelope"></i> contact@rechargemaroc.ma</li>
+            <li><i class="fas fa-phone"></i> +212 5 22 33 44 55</li>
+            <li><i class="fas fa-map-marker-alt"></i> Casablanca, Maroc</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2024 RechargeMaroc. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
 </div>

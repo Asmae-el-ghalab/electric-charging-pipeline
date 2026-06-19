@@ -155,6 +155,21 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Rafraîchit les données manuellement
    */
+   isScrolled = false;  // ✅ Ajouter cette propriété
+  menuOpen = false;    // ✅ Ajouter pour le menu mobile
+  
+  // ... reste du code ...
+  
+  // ✅ Ajouter la méthode pour le menu mobile
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+  
+  // ✅ Ajouter la méthode pour gérer le scroll
+ 
+  onWindowScroll() {
+    this.isScrolled = window.scrollY > 50;
+  }
   refreshData(): void {
     if (this.isRefreshing || this.loading) return;
     

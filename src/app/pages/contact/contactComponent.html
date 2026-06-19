@@ -1,110 +1,335 @@
-<!-- Section Contact -->
-<section class="contact-section">
-  <div class="contact-container">
-    <div class="contact-header">
-      <h2 class="contact-title">📞 Contactez-nous</h2>
-      <p class="contact-subtitle">Une question ? Un problème ? Nous sommes là pour vous aider 24/7</p>
-    </div>
-
-    <div class="contact-wrapper">
-      <!-- Formulaire de contact -->
-      <div class="contact-form">
-        <h3 class="form-title">Envoyez-nous un message</h3>
-        <form>
-          <div class="form-group">
-            <label>Nom complet</label>
-            <input type="text" placeholder="Votre nom et prénom" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="votre@email.com" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Téléphone</label>
-            <input type="tel" placeholder="+212 6XX XXX XXX">
-          </div>
-          
-          <div class="form-group">
-            <label>Sujet</label>
-            <select>
-              <option value="">Sélectionnez un sujet</option>
-              <option value="borne">Problème avec une borne</option>
-              <option value="facturation">Question facturation</option>
-              <option value="suggestion">Suggestion</option>
-              <option value="partenariat">Partenariat</option>
-              <option value="autre">Autre</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>Message</label>
-            <textarea rows="5" placeholder="Décrivez votre demande..."></textarea>
-          </div>
-          
-          <button type="submit" class="btn-submit">📧 Envoyer le message</button>
-        </form>
+<!-- src/app/pages/contact/contactComponent.html -->
+<div class="contact-container">
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a routerLink="/" class="logo"></a>
+      <ul class="nav-links">
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a></li>
+        <li><a routerLink="/carte" routerLinkActive="active">Carte</a></li>
+        <li><a routerLink="/bornes" routerLinkActive="active">Bornes</a></li>
+        <li><a routerLink="/a-propos" routerLinkActive="active">À propos</a></li>
+        <li><a routerLink="/contact" routerLinkActive="active" class="active">Contact</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <a routerLink="/connexion" class="btn-outline">Connexion</a>
+        <a routerLink="/inscription" class="btn-primary">Inscription</a>
       </div>
+      <button class="mobile-menu-btn" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
 
-      <!-- Informations de contact -->
-      <div class="contact-info">
-        <h3 class="info-title">Nos coordonnées</h3>
-        
-        <div class="info-card">
-          <div class="info-icon">📍</div>
-          <div class="info-content">
-            <h4>Adresse</h4>
-            <p>123, Avenue Mohammed V<br>Casablanca, Maroc</p>
-          </div>
-        </div>
-
-        <div class="info-card">
-          <div class="info-icon">📞</div>
-          <div class="info-content">
-            <h4>Téléphone</h4>
-            <p>+212 5XX XXX XXX<br>+212 6XX XXX XXX</p>
-          </div>
-        </div>
-
-        <div class="info-card">
-          <div class="info-icon">✉️</div>
-          <div class="info-content">
-            <h4>Email</h4>
-            <p>contact@bornemaroc.ma<br>support@bornemaroc.ma</p>
-          </div>
-        </div>
-
-        <div class="info-card">
-          <div class="info-icon">⏱️</div>
-          <div class="info-content">
-            <h4>Horaires</h4>
-            <p>Lundi - Vendredi: 9h - 18h<br>Samedi: 10h - 14h</p>
-          </div>
-        </div>
-
-        <!-- Réseaux sociaux -->
-        <div class="social-links">
-          <h4>Suivez-nous</h4>
-          <div class="social-icons">
-            <a href="#" class="social-icon">📘</a>
-            <a href="#" class="social-icon">🐦</a>
-            <a href="#" class="social-icon">📷</a>
-            <a href="#" class="social-icon">💼</a>
-          </div>
-        </div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">Contactez <span class="highlight">RechargeMaroc</span></h1>
+        <p class="hero-subtitle">Nous sommes là pour vous accompagner dans votre transition énergétique</p>
       </div>
     </div>
+  </section>
 
-    <!-- Carte Google Maps -->
-    <div class="map-contact">
-      <h3 class="map-contact-title">📍 Retrouvez-nous</h3>
-      <div class="map-wrapper-contact">
-        <iframe 
-          src="https://www.openstreetmap.org/export/embed.html?bbox=-7.629%2C33.573%2C-7.579%2C33.593&layer=mapnik&marker=33.583%2C-7.604" 
-          allowfullscreen>
-        </iframe>
+  <!-- Section Contact -->
+  <section class="contact-section">
+    <div class="container">
+      <div class="contact-grid">
+        <!-- Formulaire de contact -->
+        <div class="contact-form-wrapper">
+          <div class="section-header">
+            <span class="section-tag">Envoyez-nous un message</span>
+            <h2>Parlons de votre projet</h2>
+            <p>Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais</p>
+          </div>
+          
+          <form class="contact-form" (ngSubmit)="onSubmit()" #contactForm="ngForm">
+            <div class="form-group">
+              <label for="name">
+                <i class="fas fa-user"></i>
+                Nom complet
+              </label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name"
+                [(ngModel)]="contactData.name"
+                required
+                placeholder="Votre nom complet"
+                class="form-control"
+                #name="ngModel">
+              <div class="error-message" *ngIf="name.invalid && name.touched">
+                Le nom est requis
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">
+                <i class="fas fa-envelope"></i>
+                Email
+              </label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email"
+                [(ngModel)]="contactData.email"
+                required
+                email
+                placeholder="votre@email.com"
+                class="form-control"
+                #email="ngModel">
+              <div class="error-message" *ngIf="email.invalid && email.touched">
+                <span *ngIf="email.errors?.['required']">L'email est requis</span>
+                <span *ngIf="email.errors?.['email']">Veuillez entrer un email valide</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">
+                <i class="fas fa-phone"></i>
+                Téléphone
+              </label>
+              <input 
+                type="tel" 
+                id="phone" 
+                name="phone"
+                [(ngModel)]="contactData.phone"
+                placeholder="+212 6 00 00 00 00"
+                class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="subject">
+                <i class="fas fa-tag"></i>
+                Sujet
+              </label>
+              <select 
+                id="subject" 
+                name="subject"
+                [(ngModel)]="contactData.subject"
+                required
+                class="form-control"
+                #subject="ngModel">
+                <option value="">Sélectionnez un sujet</option>
+                <option value="information">Demande d'information</option>
+                <option value="partenariat">Partenariat</option>
+                <option value="support">Support technique</option>
+                <option value="signalement">Signaler un problème</option>
+                <option value="autre">Autre</option>
+              </select>
+              <div class="error-message" *ngIf="subject.invalid && subject.touched">
+                Veuillez sélectionner un sujet
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="message">
+                <i class="fas fa-comment"></i>
+                Message
+              </label>
+              <textarea 
+                id="message" 
+                name="message"
+                [(ngModel)]="contactData.message"
+                required
+                rows="5"
+                placeholder="Décrivez votre demande en détail..."
+                class="form-control"
+                #message="ngModel"></textarea>
+              <div class="error-message" *ngIf="message.invalid && message.touched">
+                Le message est requis
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              class="btn-submit" 
+              [disabled]="contactForm.invalid || isSubmitting">
+              <span *ngIf="!isSubmitting">
+                <i class="fas fa-paper-plane"></i>
+                Envoyer le message
+              </span>
+              <span *ngIf="isSubmitting">
+                <i class="fas fa-spinner fa-spin"></i>
+                Envoi en cours...
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Informations de contact -->
+        <div class="contact-info-wrapper">
+          <div class="info-card">
+            <h3>Informations de contact</h3>
+            <p>N'hésitez pas à nous contacter par téléphone ou à nous rendre visite</p>
+            
+            <div class="info-items">
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="info-content">
+                  <h4>Adresse</h4>
+                  <p>123, Boulevard Mohamed V<br>Casablanca 20000, Maroc</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="fas fa-phone"></i>
+                </div>
+                <div class="info-content">
+                  <h4>Téléphone</h4>
+                  <p>+212 5 22 33 44 55</p>
+                  <p class="sub-info">Lun-Ven: 9h - 18h</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div class="info-content">
+                  <h4>Email</h4>
+                  <p>contact@rechargemaroc.ma</p>
+                  <p class="sub-info">support@rechargemaroc.ma</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-content">
+                  <h4>Horaires d'ouverture</h4>
+                  <p>Lundi - Vendredi: 9h - 18h</p>
+                  <p class="sub-info">Samedi: 10h - 14h</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <h4>Suivez-nous</h4>
+              <div class="social-icons">
+                <a href="#" aria-label="Facebook" class="social-icon facebook">
+                  <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" aria-label="Twitter" class="social-icon twitter">
+                  <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" aria-label="LinkedIn" class="social-icon linkedin">
+                  <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a href="#" aria-label="Instagram" class="social-icon instagram">
+                  <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" aria-label="YouTube" class="social-icon youtube">
+                  <i class="fab fa-youtube"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <!-- Section Carte -->
+  <section class="map-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Nous trouver</span>
+        <h2>Où nous situer</h2>
+        <p>Visitez notre bureau à Casablanca</p>
+      </div>
+      <div class="map-container">
+        <div class="map-placeholder">
+          <div class="map-content">
+            <i class="fas fa-map-marked-alt"></i>
+            <h3>RechargeMaroc</h3>
+            <p>123, Boulevard Mohamed V, Casablanca</p>
+            <a href="https://www.google.com/maps" target="_blank" class="btn-map">
+              <i class="fas fa-directions"></i>
+              Voir sur Google Maps
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section FAQ -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">FAQ</span>
+        <h2>Questions fréquentes</h2>
+        <p>Les réponses aux questions les plus posées</p>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-item" *ngFor="let faq of faqs; let i = index" [class.active]="faq.open">
+          <div class="faq-question" (click)="toggleFaq(i)">
+            <h3>{{ faq.question }}</h3>
+            <span class="faq-icon">
+              <i class="fas" [class.fa-plus]="!faq.open" [class.fa-minus]="faq.open"></i>
+            </span>
+          </div>
+          <div class="faq-answer" *ngIf="faq.open">
+            <p>{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a routerLink="/" class="logo"></a>
+          <p>La première plateforme marocaine de localisation des bornes de recharge pour véhicules électriques.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h4>Liens rapides</h4>
+          <ul>
+            <li><a routerLink="/">Accueil</a></li>
+            <li><a routerLink="/carte">Carte</a></li>
+            <li><a routerLink="/bornes">Bornes</a></li>
+            <li><a routerLink="/a-propos">À propos</a></li>
+            <li><a routerLink="/contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Ressources</h4>
+          <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Conditions d'utilisation</a></li>
+            <li><a href="#">Politique de confidentialité</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <ul>
+            <li><i class="fas fa-envelope"></i> contact@rechargemaroc.ma</li>
+            <li><i class="fas fa-phone"></i> +212 5 22 33 44 55</li>
+            <li><i class="fas fa-map-marker-alt"></i> Casablanca, Maroc</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 RechargeMaroc. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+</div>

@@ -1,179 +1,616 @@
-/* Container */
-.login-container, .register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* src/app/pages/register/registerComponent.css */
+
+/* ============================================================
+   REGISTER COMPONENT — Page d'inscription
+   Palette: #00ACC1 (primary) | #43A047 (secondary) | #263238 (dark)
+   ============================================================ */
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+:host {
+  --color-primary:             #00ACC1;
+  --color-primary-dark:        #007C91;
+  --color-primary-light:       #E0F7FA;
+  --color-primary-gradient:    linear-gradient(135deg, #00ACC1 0%, #00838F 100%);
+
+  --color-secondary:           #43A047;
+  --color-secondary-dark:      #2E7D32;
+  --color-secondary-light:     #E8F5E9;
+
+  --color-dark:                #263238;
+  --color-dark-soft:           #607D8B;
+  --color-dark-light:          #78909C;
+
+  --color-white:               #FFFFFF;
+  --color-bg:                  #F4F8F9;
+  --color-border:              #E0E6E9;
+
+  --color-success:             #43A047;
+  --color-success-light:       #E8F5E9;
+  --color-danger:              #E53935;
+  --color-danger-light:        #FDECEA;
+  --color-warning:             #FB8C00;
+  --color-warning-light:       #FFF3E0;
+  --color-info:                #1E88E5;
+  --color-info-light:          #E3F2FD;
+
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+
+  --shadow-sm:   0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,.13);
+
+  --transition:  .22s ease;
+
+  display: block;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  color: var(--color-dark);
+  background: var(--color-bg);
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
 }
 
-/* Card */
-.login-card, .register-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  padding: 40px;
+.register-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+  position: relative;
+}
+
+/* ============================================================
+   NAVBAR (via app-navbar)
+   ============================================================ */
+
+app-navbar {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* ============================================================
+   REGISTER CARD
+   ============================================================ */
+
+.register-card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 40px 48px;
+  max-width: 460px;
   width: 100%;
-  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  animation: fadeInUp 0.5s ease;
 }
 
-/* Header */
-.login-header, .register-header {
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.register-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 
-.login-header h1, .register-header h1 {
-  color: #333;
-  font-size: 24px;
-  margin-bottom: 10px;
+.register-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-dark);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
 }
 
-.subtitle {
-  color: #666;
-  font-size: 14px;
+.register-header .subtitle {
+  font-size: 0.95rem;
+  color: var(--color-dark-soft);
 }
 
-/* Form */
-.form-group {
+/* ============================================================
+   ALERTS
+   ============================================================ */
+
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert i {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.alert-success {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.alert-error {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+/* ============================================================
+   FORM GROUP
+   ============================================================ */
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .form-group label {
-  display: block;
-  color: #555;
-  font-weight: 500;
-  margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.form-group label .required {
+  color: var(--color-danger);
+  margin-left: 2px;
 }
 
 .form-control {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-dark);
+  background: var(--color-bg);
   transition: all 0.3s ease;
-  box-sizing: border-box;
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: var(--color-dark-light);
 }
 
 .form-control:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.1);
+  background: var(--color-white);
 }
 
 .form-control.is-invalid {
-  border-color: #dc3545;
+  border-color: var(--color-danger);
 }
 
-/* Password input */
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+}
+
+/* ============================================================
+   PASSWORD INPUT WRAPPER
+   ============================================================ */
+
 .password-input-wrapper {
   position: relative;
 }
 
+.password-input-wrapper .form-control {
+  padding-right: 48px;
+}
+
 .password-toggle {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  color: #999;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+  color: var(--color-dark-soft);
+  transition: all 0.3s ease;
+  border-radius: 4px;
 }
 
 .password-toggle:hover {
-  color: #667eea;
+  color: var(--color-dark);
+  background: var(--color-bg);
 }
 
-/* Invalid feedback */
+/* ============================================================
+   INVALID FEEDBACK
+   ============================================================ */
+
 .invalid-feedback {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--color-danger);
 }
 
-/* Buttons */
-.btn-login, .btn-register {
+.invalid-feedback span {
+  display: block;
+}
+
+/* ============================================================
+   REGISTER BUTTON
+   ============================================================ */
+
+.btn-register {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--color-primary-gradient);
+  color: var(--color-white);
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 4px;
 }
 
-.btn-login:hover:not(:disabled), 
 .btn-register:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 172, 193, 0.4);
 }
 
-.btn-login:disabled, 
 .btn-register:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* Alerts */
-.alert {
-  padding: 10px 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
+/* ============================================================
+   SPINNER
+   ============================================================ */
 
-.alert-error {
-  background: #fee;
-  color: #dc3545;
-  border: 1px solid #fcc;
-}
-
-.alert-success {
-  background: #e8f5e9;
-  color: #4caf50;
-  border: 1px solid #c8e6c9;
-}
-
-/* Spinner */
 .spinner {
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-white);
   border-radius: 50%;
-  border-top-color: white;
-  animation: spin 0.6s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Links */
-.register-link, .login-link {
+/* ============================================================
+   LOGIN LINK
+   ============================================================ */
+
+.login-link {
   text-align: center;
-  margin-top: 20px;
-  font-size: 14px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
 }
 
-.register-link a, .login-link a {
-  color: #667eea;
+.login-link p {
+  font-size: 0.9rem;
+  color: var(--color-dark-soft);
+}
+
+.login-link a {
+  color: var(--color-primary);
   text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
-.register-link a:hover, .login-link a:hover {
+.login-link a:hover {
+  color: var(--color-primary-dark);
   text-decoration: underline;
 }
 
-/* Responsive */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
 @media (max-width: 768px) {
-  .login-card, .register-card {
-    padding: 30px 20px;
+  .register-card {
+    padding: 32px 24px;
+    max-width: 100%;
+    margin: 0 12px;
+  }
+
+  .register-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .register-container {
+    padding: 70px 12px 30px;
+  }
+
+  .form-control {
+    font-size: 0.9rem;
+    padding: 9px 12px;
+  }
+
+  .btn-register {
+    font-size: 0.95rem;
+    padding: 10px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-card {
+    padding: 24px 16px;
+  }
+
+  .register-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .register-header .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+  }
+
+  .form-control {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+
+  .btn-register {
+    font-size: 0.9rem;
+    padding: 8px;
+    min-height: 40px;
+  }
+
+  .password-toggle {
+    font-size: 1rem;
+    padding: 2px 6px;
+  }
+
+  .login-link p {
+    font-size: 0.8rem;
+  }
+
+  .alert {
+    font-size: 0.8rem;
+    padding: 10px 12px;
+  }
+
+  .alert i {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .register-card {
+    padding: 48px 56px;
+    max-width: 500px;
+  }
+}
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --color-bg: #1a1a2e;
+    --color-white: #16213e;
+    --color-border: #2a3a5e;
+    --color-dark: #e0e0e0;
+    --color-dark-soft: #a0aec0;
+    --color-dark-light: #718096;
+    --color-primary-light: #1a3a5e;
+    --color-success-light: #1a3a2e;
+    --color-danger-light: #3a1a1a;
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .register-card {
+    background: #16213e;
+    border-color: #2a3a5e;
+  }
+
+  .register-header h1 {
+    color: #e0e0e0;
+  }
+
+  .register-header .subtitle {
+    color: #a0aec0;
+  }
+
+  .form-group label {
+    color: #a0aec0;
+  }
+
+  .form-control {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    border-color: #2a3a5e;
+  }
+
+  .form-control:focus {
+    background: #1a1a2e;
+  }
+
+  .form-control::placeholder {
+    color: #718096;
+  }
+
+  .password-toggle {
+    color: #a0aec0;
+  }
+
+  .password-toggle:hover {
+    color: #e0e0e0;
+    background: #1a1a2e;
+  }
+
+  .login-link {
+    border-color: #2a3a5e;
+  }
+
+  .login-link p {
+    color: #a0aec0;
+  }
+
+  .alert-success {
+    background: #1a3a2e;
+    color: #43a047;
+    border-color: #43a047;
+  }
+
+  .alert-error {
+    background: #3a1a1a;
+    color: #e74c3c;
+    border-color: #e74c3c;
+  }
+
+  .btn-register {
+    background: linear-gradient(135deg, #00838F, #1a5a2e);
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITÉ
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .register-card {
+    animation: none !important;
+  }
+
+  .spinner {
+    animation-duration: 1.5s;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .register-card {
+    border-width: 2px;
+  }
+
+  .form-control {
+    border-width: 2px;
+  }
+
+  .btn-register {
+    border: 2px solid #00ACC1;
+  }
+
+  .alert-success,
+  .alert-error {
+    border-width: 2px;
+  }
+
+  .password-toggle {
+    border: 1px solid #00ACC1;
+  }
+
+  .login-link a {
+    text-decoration: underline;
+  }
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-dark-soft);
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+
+@media print {
+  .register-container {
+    padding: 40px 20px;
+  }
+
+  .register-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd;
+  }
+
+  .btn-register,
+  .password-toggle,
+  .login-link a {
+    display: none !important;
+  }
+
+  app-navbar {
+    display: none !important;
+  }
+
+  .alert {
+    border: 1px solid #ddd;
+    background: #f5f5f5 !important;
+    color: #263238 !important;
   }
 }

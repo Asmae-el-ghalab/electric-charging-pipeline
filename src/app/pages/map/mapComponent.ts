@@ -5,6 +5,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { timeout, catchError, retry } from 'rxjs/operators';
 import { of, TimeoutError } from 'rxjs';
 import { NavbarComponent } from '../../components/navbar/navbarComponent';
+import { RouterModule } from '@angular/router';
 declare var L: any;
 
 interface Borne {
@@ -33,9 +34,9 @@ interface PageResponse {
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule], // ✅ Ajouter RouterModule ici
   templateUrl: './mapComponent.html',
-  styleUrl: './mapComponent.css',
+  styleUrl: './mapComponent.css'
 })
 export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private map: any;
@@ -64,7 +65,19 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'OutOfService', label: '❌ Hors service' },
     { value: 'Planned', label: '📅 Planifiée' }
   ];
-
+  isScrolled = false;  // ✅ Ajouter cette propriété
+  menuOpen = false;    // ✅ Ajouter pour le menu mobile
+  
+  // ... reste du code ...
+  
+  // ✅ Ajouter la méthode pour le menu mobile
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+  
+  // ✅ Ajouter la méthode pour gérer le scroll
+ 
+ 
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
