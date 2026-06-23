@@ -1,10 +1,6 @@
-// src/main/java/com/bornemaroc/backend/entity/Borne.java
 package com.bornemaroc.backend.entity;
 
 import javax.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "stations")
-@Data
-@NoArgsConstructor
-@ToString(exclude = "connections")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Borne {
 
@@ -43,7 +36,6 @@ public class Borne {
     @Column(name = "usage_cost")
     private String usageCost;
 
-    // ✅ CHAMPS POUR LA GESTION DES SESSIONS
     @Column(name = "is_occupied")
     private Boolean isOccupied = false;
     
@@ -61,10 +53,77 @@ public class Borne {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ✅ RELATION AVEC CONNECTION (au lieu de Prise)
     @JsonIgnore
     @OneToMany(mappedBy = "borne", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Connection> connections = new ArrayList<>();
+    
+    // Constructeurs
+    public Borne() {}
+    
+    // Getters et Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getUuid() { return uuid; }
+    public void setUuid(String uuid) { this.uuid = uuid; }
+    
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+    
+    public String getProvince() { return province; }
+    public void setProvince(String province) { this.province = province; }
+    
+    public String getPostcode() { return postcode; }
+    public void setPostcode(String postcode) { this.postcode = postcode; }
+    
+    public double getLatitude() { return latitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
+    
+    public double getLongitude() { return longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
+    
+    public String getOperator() { return operator; }
+    public void setOperator(String operator) { this.operator = operator; }
+    
+    public String getOperatorWebsite() { return operatorWebsite; }
+    public void setOperatorWebsite(String operatorWebsite) { this.operatorWebsite = operatorWebsite; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    
+    public Boolean getIsOperational() { return isOperational; }
+    public void setIsOperational(Boolean isOperational) { this.isOperational = isOperational; }
+    
+    public String getUsageCost() { return usageCost; }
+    public void setUsageCost(String usageCost) { this.usageCost = usageCost; }
+    
+    public Boolean getIsOccupied() { return isOccupied; }
+    public void setIsOccupied(Boolean isOccupied) { this.isOccupied = isOccupied; }
+    public void setIsOccupied(boolean isOccupied) { this.isOccupied = isOccupied; }
+    
+    public Long getSessionId() { return sessionId; }
+    public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+    
+    public String getConnectorType() { return connectorType; }
+    public void setConnectorType(String connectorType) { this.connectorType = connectorType; }
+    
+    public Double getPower() { return power; }
+    public void setPower(Double power) { this.power = power; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    
+    public List<Connection> getConnections() { return connections; }
+    public void setConnections(List<Connection> connections) { this.connections = connections; }
     
     @PrePersist
     protected void onCreate() {
@@ -86,7 +145,6 @@ public class Borne {
         updatedAt = LocalDateTime.now();
     }
     
-    // ✅ Méthodes utilitaires pour les connections
     public void addConnection(Connection connection) {
         if (this.connections == null) {
             this.connections = new ArrayList<>();

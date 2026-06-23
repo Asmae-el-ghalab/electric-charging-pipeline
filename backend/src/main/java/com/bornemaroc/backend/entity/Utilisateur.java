@@ -1,4 +1,3 @@
-// src/main/java/com/bornemaroc/backend/entity/Utilisateur.java
 package com.bornemaroc.backend.entity;
 
 import com.bornemaroc.backend.enums.RoleUtilisateur;
@@ -6,12 +5,14 @@ import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "utilisateur")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Utilisateur {
 
     @Id
@@ -30,6 +31,7 @@ public class Utilisateur {
     private RoleUtilisateur role;
     
     @Column(name = "date_inscription")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date dateInscription;
     
     private String dtype;
@@ -37,16 +39,17 @@ public class Utilisateur {
     private String vehicule;
     
     @Column(name = "derniere_connexion")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date derniereConnexion;
     
     @Column(name = "niveau_acces")
-    private Integer niveauAcces;  // ✅ Utiliser Integer (Wrapper)
+    private Integer niveauAcces;
     
     @Column(name = "est_bloque")
     private Boolean estBloque = false;
     
     @Column(name = "type_prise")
-    private String typePrise;  // ✅ String dans Utilisateur
+    private String typePrise;
     
     @Column(name = "type_utilisateur")
     private String typeUtilisateur;
