@@ -1,9 +1,268 @@
-<div *ngIf="session; else loading">
-  <p>ID: {{ session.id }}</p>
-  <p>Status: {{ session.status }}</p>
-  <p>Borne: {{ session.borneId }}</p>
-</div>
+<!-- src/app/pages/session/session.component.html -->
+<div class="session-container">
+  
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <section class="navigation-section">
+    <app-navbar></app-navbar>
+  </section>
+  
+  <!-- ============================================================
+       BANDEAU
+       ============================================================ -->
+  <div class="test-banner">
+    🚀 SESSION - Détails de la recharge
+  </div>
 
-<ng-template #loading>
-  <p>Loading session...</p>
-</ng-template>
+  <!-- ============================================================
+       LOADING
+       ============================================================ -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <h2>⏳ Chargement de la session...</h2>
+    <p>ID: {{ sessionId }}</p>
+  </div>
+
+  <!-- ============================================================
+       ERREUR
+       ============================================================ -->
+  <div *ngIf="error && !loading" class="error-container">
+    <i class="fas fa-exclamation-circle"></i>
+    <h2>Erreur de chargement</h2>
+    <p>Impossible de charger la session #{{ sessionId }}</p>
+    <button (click)="retour()" class="btn btn-primary">⬅️ Retour</button>
+  </div>
+
+  <!-- ============================================================
+       CONTENU PRINCIPAL
+       ============================================================ -->
+  <div *ngIf="!loading && !error && session" class="content">
+    
+    <!-- Statut -->
+    <div class="status-banner" [class]="getStatusClass(session.status)">
+      <strong>Statut:</strong> 
+      <span class="status-text">{{ getStatusText(session.status) }}</span>
+      <span *ngIf="isOffline" class="offline-badge">📡 Hors ligne</span>
+    </div>
+
+    <h1 class="session-title">🔋 Session de Recharge #{{ session.id }}</h1>
+
+    <!-- Informations de la session -->
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">ID Session</span>
+        <span class="info-value">#{{ session.id }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Conducteur</span>
+        <span class="info-value">{{ session.conducteurId }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Date début</span>
+        <span class="info-value">{{ session.dateDebut | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Borne ID</span>
+        <span class="info-value">#{{ session.borneId }}</span>
+      </div>
+    </div>
+
+    <!-- Borne -->
+    <div *ngIf="borne" class="borne-card">
+      <h3>📍 {{ borne.title || 'Borne #' + borne.id }}</h3>
+      <p class="borne-address">{{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}</p>
+      
+      <div class="borne-details-grid">
+        <div class="borne-detail">
+          <span class="detail-label">Opérateur</span>
+          <span class="detail-value">{{ getOperatorName(borne.operator) }}</span>
+        </div>
+        <div class="borne-detail">
+          <span class="detail-label">Puissance</span>
+          <span class="detail-value power-value">
+            {{ getMaxPowerFromConnections() }} kW
+          </span>
+        </div>
+        <div class="borne-detail">
+          <span class="detail-label">Connecteurs</span>
+          <span class="detail-value">{{ getTotalConnectors() }}</span>
+        </div>
+        <div class="borne-detail">
+          <span class="detail-label">Types</span>
+          <span class="detail-value">{{ getConnectionTypes() }}</span>
+        </div>
+      </div>
+
+      <!-- Badges des connections -->
+      <div *ngIf="connections && connections.length > 0" class="borne-connections">
+        <div class="connection-badges">
+          <span class="badge-conn" *ngFor="let conn of connections"
+                [class.badge-dc]="conn.currentType === 'DC'"
+                [class.badge-ac]="conn.currentType === 'AC (Three-Phase)'">
+            <span class="conn-icon">
+              <i class="fas" [class.fa-bolt]="conn.currentType === 'DC'" 
+                 [class.fa-plug]="conn.currentType !== 'DC'"></i>
+            </span>
+            {{ conn.connectionType }}
+            <span class="conn-power-badge">{{ conn.powerKw }}kW</span>
+            <span class="conn-type-label">{{ conn.currentType === 'DC' ? '⚡DC' : '🔌AC' }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suivi en temps réel -->
+    <div *ngIf="isStatusActive()" class="suivi-card">
+      <div class="suivi-header">
+        <h3>📊 Suivi en temps réel</h3>
+        <div class="suivi-actions">
+          <button (click)="toggleFullScreen()" class="btn-fullscreen" title="Plein écran">
+            {{ isFullScreen ? '⛶ Réduire' : '⛶ Agrandir' }}
+          </button>
+        </div>
+      </div>
+      
+      <div class="metrics-grid">
+        <div class="metric" [class.warning]="progression > 80" [class.danger]="progression > 95">
+          <span class="metric-label">⏱️ Temps écoulé</span>
+          <span class="metric-value">{{ tempsEcoule }} min</span>
+          <span class="metric-sub">sur {{ dureeMaximale }} min</span>
+          <div class="metric-progress">
+            <div class="metric-progress-fill" [style.width.%]="(tempsEcoule / dureeMaximale) * 100"></div>
+          </div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">⚡ Énergie</span>
+          <span class="metric-value">{{ energieEstimee | number:'1.1-1' }} kWh</span>
+          <span class="metric-sub">à {{ puissance }} kW</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">💰 Coût estimé</span>
+          <span class="metric-value">{{ coutEstime | currency:'EUR' }}</span>
+          <span class="metric-sub">{{ tarifKWh }} €/kWh</span>
+        </div>
+      </div>
+      
+      <div class="progress-container">
+        <div class="progress-labels">
+          <span>Début</span>
+          <span>{{ progression | number:'1.0-0' }}%</span>
+          <span>Fin ({{ dureeMaximale }} min)</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progression"
+               [class.progress-warning]="progression > 80"
+               [class.progress-danger]="progression > 95">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         ACTIONS 
+         ============================================================ -->
+    
+    <!-- Actions pour session active -->
+    <div *ngIf="isStatusActive()" class="actions">
+      
+      <button (click)="showTerminateModal = true" [disabled]="loading" class="btn btn-danger">
+        ⛔ Terminer la recharge
+      </button>
+      <button (click)="showCancelModal = true" [disabled]="loading" class="btn btn-danger-outline">
+        ❌ Annuler
+      </button>
+    </div>
+
+    <!-- Actions pour session en pause -->
+    <div *ngIf="isStatusPaused()" class="actions">
+      <button (click)="reprendreSession()" [disabled]="loading" class="btn btn-success">
+        ▶️ Reprendre la recharge
+      </button>
+      <button (click)="showTerminateModal = true" [disabled]="loading" class="btn btn-danger">
+        ⛔ Terminer
+      </button>
+      <button (click)="showCancelModal = true" [disabled]="loading" class="btn btn-danger-outline">
+        ❌ Annuler
+      </button>
+    </div>
+
+    <!-- Résumé -->
+    <div *ngIf="isStatusFinished()" 
+         class="resume-card"
+         [class.terminated]="isStatusTerminated()"
+         [class.cancelled]="isStatusCancelled()">
+      <h3>{{ isStatusTerminated() ? '✅ Recharge terminée' : '❌ Recharge annulée' }}</h3>
+      <div *ngIf="isStatusTerminated()" class="resume-details">
+        <div class="resume-item">
+          <span class="resume-label">Durée</span>
+          <span class="resume-value">{{ session.duree }} min</span>
+        </div>
+        <div class="resume-item">
+          <span class="resume-label">Énergie</span>
+          <span class="resume-value">{{ session.consommation | number:'1.1-1' }} kWh</span>
+        </div>
+        <div class="resume-item">
+          <span class="resume-label">Montant</span>
+          <span class="resume-value">{{ session.montantTotal | currency:'EUR' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions de navigation -->
+    <div class="nav-actions">
+      <button (click)="retour()" class="btn btn-primary btn-back">
+        ⬅️ Retour aux bornes
+      </button>
+      <button *ngIf="isStatusFinished()" (click)="retour()" class="btn btn-secondary">
+        🔄 Nouvelle recharge
+      </button>
+    </div>
+
+    <!-- DEBUG PANEL -->
+    
+  </div>
+
+  <!-- ============================================================
+       MODAL DE CONFIRMATION - TERMINER
+       ============================================================ -->
+  <div *ngIf="showTerminateModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-icon danger">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3>Voulez-vous vraiment terminer cette recharge ?</h3>
+      <p>Cette action est irréversible et mettra fin à votre session en cours.</p>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" (click)="showTerminateModal = false">
+          Annuler
+        </button>
+        <button class="btn btn-confirm danger" (click)="terminerSession()">
+          Terminer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL DE CONFIRMATION - ANNULER
+       ============================================================ -->
+  <div *ngIf="showCancelModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-icon warning">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <h3>Voulez-vous vraiment annuler cette recharge ?</h3>
+      <p>Cette action annulera votre session en cours sans remboursement.</p>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" (click)="showCancelModal = false">
+          Retour
+        </button>
+        <button class="btn btn-confirm warning" (click)="annulerSession()">
+          Annuler la recharge
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

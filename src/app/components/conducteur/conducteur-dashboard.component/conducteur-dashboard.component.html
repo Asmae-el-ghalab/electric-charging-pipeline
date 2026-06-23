@@ -290,7 +290,7 @@
           </div>
           <div class="signalement-body">
             <p>{{ signalement.description }}</p>
-            <small>Borne ID: {{ signalement.borne?.id || 'N/A' }}</small>
+            <small>Borne ID: {{ signalement.borneId || signalement.borne?.id || 'N/A' }}</small>
           </div>
           <div class="signalement-actions">
             <button (click)="voirDetailsSignalement(signalement)" class="btn-details">

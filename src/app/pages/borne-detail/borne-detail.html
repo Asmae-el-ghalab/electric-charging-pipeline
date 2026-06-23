@@ -1,0 +1,242 @@
+<!-- src/app/pages/borne-detail/borne-detail.component.html -->
+<div class="detail-container">
+  <!-- Loading -->
+   <section class="navigation-section">
+    <app-navbar></app-navbar>
+  </section>
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des détails...</p>
+  </div>
+
+  <!-- Erreur -->
+  <div class="error-container" *ngIf="error && !loading">
+    <i class="fas fa-exclamation-circle"></i>
+    <h2>Erreur de chargement</h2>
+    <p>Impossible de charger les détails de cette borne.</p>
+    <div class="error-actions">
+      <button class="btn btn-primary" (click)="loadBorneDetails()">
+        <i class="fas fa-sync"></i> Réessayer
+      </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Retour
+      </button>
+    </div>
+  </div>
+
+  <!-- Détails -->
+  <div class="detail-content" *ngIf="!loading && !error && borne">
+  
+
+    <!-- En-tête -->
+    <div class="detail-header">
+      <div class="header-left">
+        <h1>{{ borne.title || 'Borne #' + borne.id }}</h1>
+        <div class="borne-meta">
+          <span class="borne-id">#{{ borne.id }}</span>
+          <span class="borne-uuid" *ngIf="borne.uuid">UUID: {{ borne.uuid }}</span>
+          <span class="status-badge" [ngClass]="getStatusClass(borne.status)">
+            <span class="status-dot"></span>
+            {{ getStatusText(borne.status) }}
+          </span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="openMaps()">
+          <i class="fas fa-map-marked-alt"></i> Ouvrir dans Maps
+        </button>
+      </div>
+    </div>
+
+    <!-- Informations générales -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <h3>Adresse</h3>
+        <p class="main-info">{{ borne.address }}</p>
+        <p class="sub-info" *ngIf="borne.city"><i class="fas fa-city"></i> {{ borne.city }}</p>
+        <p class="sub-info" *ngIf="borne.province"><i class="fas fa-globe"></i> {{ borne.province }}</p>
+        <p class="sub-info" *ngIf="borne.postcode"><i class="fas fa-mailbox"></i> Code postal: {{ borne.postcode }}</p>
+      </div>
+
+      <div class="info-card">
+        <div class="card-icon"><i class="fas fa-building"></i></div>
+        <h3>Opérateur</h3>
+        <p class="main-info">{{ getOperatorName(borne.operator) }}</p>
+        <p class="sub-info" *ngIf="borne.operatorWebsite">
+          <i class="fas fa-globe"></i>
+          <a href="{{ borne.operatorWebsite }}" target="_blank">{{ borne.operatorWebsite }}</a>
+        </p>
+        <p class="sub-info" *ngIf="borne.isOperational">
+          <i class="fas fa-check-circle" style="color: #198754;"></i> Opérationnelle
+        </p>
+      </div>
+
+      <div class="info-card">
+        <div class="card-icon"><i class="fas fa-euro-sign"></i></div>
+        <h3>Tarif</h3>
+        <p class="main-info">{{ getUsageCost() }}</p>
+        <p class="sub-info" *ngIf="borne.usageCost === 'Non disponible' || borne.usageCost === 'Free'">
+          <i class="fas fa-info-circle"></i> Gratuit
+        </p>
+        <p class="sub-info" *ngIf="borne.usageCost && borne.usageCost !== 'Non disponible' && borne.usageCost !== 'Free'">
+          <i class="fas fa-info-circle"></i> Consulter le tarif sur place
+        </p>
+      </div>
+
+      <div class="info-card">
+        <div class="card-icon"><i class="fas fa-bolt"></i></div>
+        <h3>Puissance maximale</h3>
+        <p class="main-info power-value">{{ getMaxPower() }}</p>
+        <p class="sub-info">
+          <i class="fas fa-plug"></i> {{ getTotalConnectors() }} connecteur(s) disponible(s)
+        </p>
+        <p class="sub-info" *ngIf="borne.power">
+          <i class="fas fa-info-circle"></i> Puissance totale: {{ borne.power }} kW
+        </p>
+      </div>
+    </div>
+
+    <!-- Status de disponibilité -->
+    <div class="availability-status" [class.available]="borne.isOccupied !== true" [class.occupied]="borne.isOccupied === true">
+      <div class="status-icon">
+        <i class="fas" [class.fa-check-circle]="borne.isOccupied !== true" [class.fa-clock]="borne.isOccupied === true"></i>
+      </div>
+      <div class="status-text">
+        <h3>{{ borne.isOccupied !== true ? '✅ Disponible' : '⏳ Occupée' }}</h3>
+        <p>{{ borne.isOccupied !== true ? 'Cette borne est disponible pour une recharge immédiate.' : 'Cette borne est actuellement utilisée par un autre conducteur.' }}</p>
+      </div>
+      <div class="status-badge-large" [class.badge-available]="borne.isOccupied !== true" [class.badge-occupied]="borne.isOccupied === true">
+        {{ borne.isOccupied !== true ? 'Disponible' : 'Occupée' }}
+      </div>
+    </div>
+
+    <!-- ============================================================
+         CONNECTIONS DÉTAILLÉES - CORRECTION AVEC BORNE.CONNECTIONS
+         ============================================================ -->
+    <div class="connections-detail-section">
+      <div class="section-header">
+        <div class="header-left">
+          <i class="fas fa-plug"></i>
+          <h2>Connecteurs disponibles</h2>
+          <span class="conn-count-badge">{{ (borne.connections?.length || 0) }} connecteurs</span>
+        </div>
+        <div class="header-right">
+          <span class="filter-badge" *ngIf="hasDCConnector()">
+            <i class="fas fa-bolt"></i> DC
+          </span>
+          <span class="filter-badge" *ngIf="hasACConnector()">
+            <i class="fas fa-plug"></i> AC
+          </span>
+        </div>
+      </div>
+
+      <!-- ✅ Utilisation de borne.connections avec vérification -->
+      <div class="connections-list" *ngIf="borne.connections && borne.connections.length > 0">
+        <div class="connection-card" *ngFor="let conn of borne.connections; let i = index">
+          <div class="conn-number">#{{ i + 1 }}</div>
+          
+          <div class="conn-main-info">
+            <div class="conn-type" [class.dc]="conn.currentType === 'DC'" [class.ac]="conn.currentType === 'AC (Three-Phase)'">
+              <span class="conn-icon">
+                <i class="fas" [class.fa-bolt]="conn.currentType === 'DC'" [class.fa-plug]="conn.currentType !== 'DC'"></i>
+              </span>
+              <span class="conn-type-name">{{ conn.connectionType }}</span>
+            </div>
+            
+            <div class="conn-power">
+              <span class="power-value">{{ conn.powerKw }} kW</span>
+              <span class="power-label">Puissance</span>
+            </div>
+            
+            <div class="conn-quantity" *ngIf="conn.quantity > 1">
+              <span class="qty-value">x{{ conn.quantity }}</span>
+              <span class="qty-label">Connecteurs</span>
+            </div>
+          </div>
+
+          <div class="conn-details-grid">
+            <div class="conn-detail-item">
+              <span class="detail-label">Type de courant</span>
+              <span class="detail-value" [class.current-dc]="conn.currentType === 'DC'" [class.current-ac]="conn.currentType === 'AC (Three-Phase)'">
+                <i class="fas" [class.fa-bolt]="conn.currentType === 'DC'" [class.fa-plug]="conn.currentType !== 'DC'"></i>
+                {{ conn.currentType || 'Non spécifié' }}
+              </span>
+            </div>
+
+            <div class="conn-detail-item">
+              <span class="detail-label">Niveau de charge</span>
+              <span class="detail-value level-badge" [style.background]="getLevelColor(conn.level)">
+                <i class="fas" [class]="'fa-' + getLevelIcon(conn.level)"></i>
+                {{ getLevelText(conn.level) }}
+                <span class="level-detail" *ngIf="conn.level">({{ conn.level }})</span>
+              </span>
+            </div>
+
+            <div class="conn-detail-item" *ngIf="conn.voltage">
+              <span class="detail-label">Tension</span>
+              <span class="detail-value"><i class="fas fa-bolt"></i> {{ conn.voltage }} V</span>
+            </div>
+
+            <div class="conn-detail-item" *ngIf="conn.amps">
+              <span class="detail-label">Ampérage</span>
+              <span class="detail-value"><i class="fas fa-chart-line"></i> {{ conn.amps }} A</span>
+            </div>
+          </div>
+
+          <!-- Informations supplémentaires -->
+          <div class="conn-extra-info">
+            <div class="extra-item" *ngIf="conn.level">
+              <i class="fas fa-signal"></i>
+              <span>{{ conn.level }}</span>
+            </div>
+            <div class="extra-item" *ngIf="conn.voltage">
+              <i class="fas fa-bolt"></i>
+              <span>{{ conn.voltage }}V</span>
+            </div>
+            <div class="extra-item" *ngIf="conn.amps">
+              <i class="fas fa-chart-line"></i>
+              <span>{{ conn.amps }}A</span>
+            </div>
+            <div class="extra-item" *ngIf="conn.quantity">
+              <i class="fas fa-copy"></i>
+              <span>Quantité: {{ conn.quantity }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aucun connecteur -->
+      <div class="no-connections" *ngIf="!borne.connections || borne.connections.length === 0">
+        <i class="fas fa-plug"></i>
+        <h3>Aucun connecteur disponible</h3>
+        <p>Cette borne ne dispose pas encore de connecteurs enregistrés.</p>
+      </div>
+    </div>
+
+    <!-- Coordonnées GPS -->
+    <div class="gps-section">
+      <div class="gps-info">
+        <i class="fas fa-globe"></i>
+        <div>
+          <h3>Coordonnées GPS</h3>
+          <p>Latitude: <strong>{{ borne.latitude }}</strong></p>
+          <p>Longitude: <strong>{{ borne.longitude }}</strong></p>
+        </div>
+      </div>
+      <button class="btn btn-primary" (click)="openMaps()">
+        <i class="fas fa-map-marked-alt"></i> Voir sur Google Maps
+      </button>
+    </div>
+
+    <!-- Dernière mise à jour -->
+    <div class="update-info">
+      <i class="fas fa-clock"></i>
+      <span>Dernière mise à jour: {{ borne.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      <span *ngIf="borne.createdAt" class="created-info">
+        <i class="fas fa-calendar-plus"></i>
+        Créée le: {{ borne.createdAt | date:'dd/MM/yyyy' }}
+      </span>
+    </div>
+  </div>
+</div>

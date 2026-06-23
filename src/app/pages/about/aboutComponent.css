@@ -37,7 +37,7 @@
   --transition:  .22s ease;
 
   display: block;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+ 
   color: var(--color-dark);
   background: var(--color-bg);
   min-height: 100vh;

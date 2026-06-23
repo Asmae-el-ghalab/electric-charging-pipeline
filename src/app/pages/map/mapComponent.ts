@@ -34,7 +34,7 @@ interface PageResponse {
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule], // ✅ Ajouter RouterModule ici
+  imports: [CommonModule, RouterModule, FormsModule,NavbarComponent], // ✅ Ajouter RouterModule ici
   templateUrl: './mapComponent.html',
   styleUrl: './mapComponent.css'
 })

@@ -3,45 +3,14 @@
   <!-- ============================================================
        NAVBAR
        ============================================================ -->
-  <nav class="navbar" [class.scrolled]="isScrolled">
-    <div class="nav-container">
-      <!-- Logo -->
-      <a routerLink="/" class="logo">
-        <span class="logo-icon"></span>
-        
-      </a>
-
-      <!-- Liens de navigation -->
-      <ul class="nav-links" [class.active]="menuOpen">
-        <li>
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
-        </li>
-        <li><a routerLink="/recherche" routerLinkActive="active">Recherche</a></li>
-        <li><a routerLink="/stations" routerLinkActive="active" class="active">Bornes</a></li>
-        <li><a routerLink="/a-propos" routerLinkActive="active">À propos</a></li>
-        <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
-      </ul>
-
-      <!-- Boutons auth -->
-      <div class="auth-buttons">
-        <a routerLink="/connexion" class="btn-outline">Connexion</a>
-        <a routerLink="/inscription" class="btn-primary">Inscription</a>
-      </div>
-
-      <!-- Mobile Menu Button -->
-      <button class="mobile-menu-btn" (click)="toggleMenu()" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-    </div>
-  </nav>
+ <section class="navigation-section">
+    <app-navbar></app-navbar>
+  </section>
 
   <!-- ============================================================
        HERO SECTION
        ============================================================ -->
   <section class="hero">
-    <!-- Video Background -->
     <video #heroVideo class="hero-video-bg" autoplay loop muted playsinline>
       <source src='/assets/img/vv.mp4' type="video/mp4">
       <source src='/assets/img/vv.mp4' type="video/mp4">
@@ -54,9 +23,7 @@
         <h1 class="hero-title">
           Trouvez facilement les bornes de recharge <span class="highlight">au Maroc</span>
         </h1>
-        <p class="hero-subtitle">
-          Accueil > Bornes
-        </p>
+        <p class="hero-subtitle">Accueil > Bornes</p>
       </div>
     </div>
   </section>
@@ -79,7 +46,6 @@
     </div>
     
     <div class="header-actions">
-      <!-- Indicateur de session active -->
       <div class="session-indicator" *ngIf="sessionActive && sessionVerifiee">
         <div class="session-indicator-content">
           <span class="session-badge active">
@@ -93,38 +59,20 @@
             </ng-container>
           </span>
         </div>
-        <button 
-          class="btn btn-sm btn-primary" 
-          (click)="voirSession(sessionActive.id)"
-          aria-label="Voir la session en cours">
-          <i class="fas fa-eye" aria-hidden="true"></i>
-          Voir
+        <button class="btn btn-sm btn-primary" (click)="voirSession(sessionActive.id)">
+          <i class="fas fa-eye" aria-hidden="true"></i> Voir
         </button>
       </div>
       
-      <!-- Bouton filtres -->
-      <button 
-        class="btn btn-filter" 
-        (click)="toggleFilters()"
-        [attr.aria-expanded]="showFilters"
-        aria-controls="filters-panel"
-        [class.active]="showFilters">
+      <button class="btn btn-filter" (click)="toggleFilters()" [class.active]="showFilters">
         <i class="fas fa-sliders-h" aria-hidden="true"></i>
         {{ showFilters ? 'Masquer filtres' : 'Filtres' }}
-        <span 
-          class="filter-count" 
-          *ngIf="filterStatus || filterCity || filterOperator"
-          aria-label="Nombre de filtres actifs">
+        <span class="filter-count" *ngIf="filterStatus || filterCity || filterOperator">
           {{ (filterStatus ? 1 : 0) + (filterCity ? 1 : 0) + (filterOperator ? 1 : 0) }}
         </span>
       </button>
 
-      <!-- Bouton rafraîchir -->
-      <button 
-        class="btn btn-refresh" 
-        (click)="refreshData()"
-        [disabled]="isRefreshing"
-        aria-label="Rafraîchir les données">
+      <button class="btn btn-refresh" (click)="refreshData()" [disabled]="isRefreshing">
         <i class="fas fa-sync" [class.spinning]="isRefreshing" aria-hidden="true"></i>
       </button>
     </div>
@@ -133,25 +81,13 @@
   <!-- ============================================================
        PANNEAU DES FILTRES
        ============================================================ -->
-  <div 
-    id="filters-panel"
-    class="filters-panel" 
-    *ngIf="showFilters"
-    role="search"
-    aria-label="Filtres de recherche">
-    
+  <div id="filters-panel" class="filters-panel" *ngIf="showFilters">
     <div class="filters-grid">
-      <!-- Filtre Statut -->
       <div class="filter-group">
         <label for="filter-status">
-          <i class="fas fa-circle" aria-hidden="true"></i>
-          Statut
+          <i class="fas fa-circle" aria-hidden="true"></i> Statut
         </label>
-        <select 
-          id="filter-status"
-          [(ngModel)]="filterStatus" 
-          (change)="onFilterChange()"
-          aria-label="Filtrer par statut">
+        <select id="filter-status" [(ngModel)]="filterStatus" (change)="onFilterChange()">
           <option value="">Tous les statuts</option>
           <option *ngFor="let status of statusList" [value]="status">
             {{ getStatusText(status) }}
@@ -159,92 +95,59 @@
         </select>
       </div>
       
-      <!-- Filtre Ville -->
       <div class="filter-group">
         <label for="filter-city">
-          <i class="fas fa-city" aria-hidden="true"></i>
-          Ville
+          <i class="fas fa-city" aria-hidden="true"></i> Ville
         </label>
-        <select 
-          id="filter-city"
-          [(ngModel)]="filterCity" 
-          (change)="onFilterChange()"
-          aria-label="Filtrer par ville">
+        <select id="filter-city" [(ngModel)]="filterCity" (change)="onFilterChange()">
           <option value="">Toutes les villes</option>
           <option *ngFor="let ville of villes" [value]="ville">{{ ville }}</option>
         </select>
       </div>
       
-      <!-- Filtre Opérateur -->
       <div class="filter-group">
         <label for="filter-operator">
-          <i class="fas fa-building" aria-hidden="true"></i>
-          Opérateur
+          <i class="fas fa-building" aria-hidden="true"></i> Opérateur
         </label>
-        <select 
-          id="filter-operator"
-          [(ngModel)]="filterOperator" 
-          (change)="onFilterChange()"
-          aria-label="Filtrer par opérateur">
+        <select id="filter-operator" [(ngModel)]="filterOperator" (change)="onFilterChange()">
           <option value="">Tous les opérateurs</option>
           <option *ngFor="let op of operateurs" [value]="op">{{ op }}</option>
         </select>
       </div>
       
-      <!-- Actions filtres -->
       <div class="filter-actions">
-        <button 
-          class="btn btn-secondary" 
-          (click)="resetFilters()"
-          aria-label="Réinitialiser tous les filtres">
-          <i class="fas fa-undo" aria-hidden="true"></i>
-          Réinitialiser
+        <button class="btn btn-secondary" (click)="resetFilters()">
+          <i class="fas fa-undo" aria-hidden="true"></i> Réinitialiser
         </button>
       </div>
     </div>
     
-    <!-- Filtres actifs -->
-    <div 
-      class="active-filters" 
-      *ngIf="filterStatus || filterCity || filterOperator"
-      role="list"
-      aria-label="Filtres actifs">
-      
-      <span class="filter-tag" *ngIf="filterStatus" role="listitem">
+    <div class="active-filters" *ngIf="filterStatus || filterCity || filterOperator">
+      <span class="filter-tag" *ngIf="filterStatus">
         <i class="fas fa-circle" aria-hidden="true"></i>
         Statut: {{ getStatusText(filterStatus) }}
-        <button 
-          class="filter-remove"
-          (click)="filterStatus = ''; onFilterChange()"
-          aria-label="Supprimer le filtre statut">
+        <button class="filter-remove" (click)="filterStatus = ''; onFilterChange()">
           <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </span>
       
-      <span class="filter-tag" *ngIf="filterCity" role="listitem">
+      <span class="filter-tag" *ngIf="filterCity">
         <i class="fas fa-city" aria-hidden="true"></i>
         Ville: {{ filterCity }}
-        <button 
-          class="filter-remove"
-          (click)="filterCity = ''; onFilterChange()"
-          aria-label="Supprimer le filtre ville">
+        <button class="filter-remove" (click)="filterCity = ''; onFilterChange()">
           <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </span>
       
-      <span class="filter-tag" *ngIf="filterOperator" role="listitem">
+      <span class="filter-tag" *ngIf="filterOperator">
         <i class="fas fa-building" aria-hidden="true"></i>
         Opérateur: {{ filterOperator }}
-        <button 
-          class="filter-remove"
-          (click)="filterOperator = ''; onFilterChange()"
-          aria-label="Supprimer le filtre opérateur">
+        <button class="filter-remove" (click)="filterOperator = ''; onFilterChange()">
           <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </span>
     </div>
 
-    <!-- Résultats du filtrage -->
     <div class="filter-results" *ngIf="filteredBornes.length > 0">
       <span class="result-count">
         <i class="fas fa-list" aria-hidden="true"></i>
@@ -256,7 +159,7 @@
   <!-- ============================================================
        ÉTAT DE CHARGEMENT
        ============================================================ -->
-  <div class="loading-container" *ngIf="loading" role="status" aria-live="polite">
+  <div class="loading-container" *ngIf="loading">
     <div class="spinner" aria-hidden="true"></div>
     <p>Chargement des bornes...</p>
   </div>
@@ -264,12 +167,7 @@
   <!-- ============================================================
        GRILLE DES BORNES
        ============================================================ -->
-  <section 
-    class="bornes-grid" 
-    *ngIf="!loading"
-    aria-label="Liste des bornes de recharge">
-    
-    <!-- Carte de borne -->
+  <section class="bornes-grid" *ngIf="!loading">
     <article 
       class="borne-card" 
       *ngFor="let borne of filteredBornes; let i = index" 
@@ -279,7 +177,6 @@
         'card-active': estSessionUtilisateur(borne),
         'card-available': estDisponible(borne)
       }"
-      [attr.aria-label]="'Borne ' + (borne.title || borne.id)"
       [style.animation-delay]="(i * 0.05) + 's'">
       
       <!-- Badge session utilisateur -->
@@ -288,14 +185,12 @@
           <i class="fas fa-bolt" aria-hidden="true"></i>
           Votre recharge
           <ng-container *ngIf="sessionActive && sessionActive.debut">
-            <span class="badge-timer">
-              {{ getSessionDuration(sessionActive.debut) }}
-            </span>
+            <span class="badge-timer">{{ getSessionDuration(sessionActive.debut) }}</span>
           </ng-container>
         </span>
       </div>
       
-      <!-- En-tête de la carte -->
+      <!-- En-tête -->
       <header class="card-header">
         <div class="card-title">
           <h3>{{ borne.title || 'Borne #' + borne.id }}</h3>
@@ -304,73 +199,73 @@
             {{ borne.id }}
           </span>
         </div>
-        <span 
-          class="status-badge" 
-          [ngClass]="getStatusClass(borne.status)"
-          [attr.aria-label]="'Statut: ' + getStatusText(borne.status)">
+        <span class="status-badge" [ngClass]="getStatusClass(borne.status)">
           <span class="status-dot" aria-hidden="true"></span>
           {{ getStatusText(borne.status) }}
         </span>
       </header>
 
-      <!-- Corps de la carte -->
+      <!-- ============================================================
+           CORPS DE LA CARTE AVEC DÉTAILS DES CONNECTIONS
+           ============================================================ -->
       <div class="card-body">
+        <!-- Adresse -->
         <div class="info-row">
           <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
           <span class="info-text" title="{{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}">
             {{ borne.address }}{{ borne.city ? ', ' + borne.city : '' }}
           </span>
         </div>
+        
+        <!-- Opérateur -->
         <div class="info-row" *ngIf="borne.operator">
           <i class="fas fa-building" aria-hidden="true"></i>
           <span class="info-text">{{ getOperatorName(borne.operator) }}</span>
         </div>
+        
+        <!-- Puissance max -->
         <div class="info-row">
           <i class="fas fa-bolt" aria-hidden="true"></i>
-          <span class="info-text">{{ borne.power || 'N/A' }} kW</span>
+          <span class="info-text">Puissance: {{ getMaxPower(borne) }}</span>
         </div>
+        
+        <!-- ============================================================
+             AFFICHAGE DES CONNECTIONS DÉTAILLÉ
+             ============================================================ -->
+      
+        
+        <!-- Tarif -->
         <div class="info-row">
           <i class="fas fa-euro-sign" aria-hidden="true"></i>
           <span class="info-text">{{ borne.usageCost || 'Gratuit' }}</span>
-        </div>
-        <div class="info-row" *ngIf="borne.connectorType">
-          <i class="fas fa-plug" aria-hidden="true"></i>
-          <span class="info-text">{{ borne.connectorType }}</span>
         </div>
       </div>
 
       <!-- Indicateur de disponibilité -->
       <div class="card-status">
-        <div 
-          class="occupation-indicator" 
-          [ngClass]="{
-            'status-available': estDisponible(borne),
-            'status-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
-            'status-my-session': estSessionUtilisateur(borne),
-            'status-unavailable': !estDisponible(borne) && !borne.isOccupied
-          }">
+        <div class="occupation-indicator" [ngClass]="{
+          'status-available': estDisponible(borne),
+          'status-occupied': borne.isOccupied && !estSessionUtilisateur(borne),
+          'status-my-session': estSessionUtilisateur(borne),
+          'status-unavailable': !estDisponible(borne) && !borne.isOccupied
+        }">
           <span class="indicator-dot" aria-hidden="true"></span>
           <span class="indicator-text">
             <ng-container *ngIf="estSessionUtilisateur(borne)">
               <i class="fas fa-bolt" aria-hidden="true"></i>
               Votre session active
               <ng-container *ngIf="sessionActive && sessionActive.debut">
-                <span class="indicator-timer">
-                  {{ getSessionDuration(sessionActive.debut) }}
-                </span>
+                <span class="indicator-timer">{{ getSessionDuration(sessionActive.debut) }}</span>
               </ng-container>
             </ng-container>
             <ng-container *ngIf="estDisponible(borne)">
-              <i class="fas fa-check-circle" aria-hidden="true"></i>
-              Disponible
+              <i class="fas fa-check-circle" aria-hidden="true"></i> Disponible
             </ng-container>
             <ng-container *ngIf="borne.isOccupied && !estSessionUtilisateur(borne)">
-              <i class="fas fa-clock" aria-hidden="true"></i>
-              Occupée
+              <i class="fas fa-clock" aria-hidden="true"></i> Occupée
             </ng-container>
             <ng-container *ngIf="!estDisponible(borne) && !borne.isOccupied">
-              <i class="fas fa-times-circle" aria-hidden="true"></i>
-              Indisponible
+              <i class="fas fa-times-circle" aria-hidden="true"></i> Indisponible
             </ng-container>
           </span>
         </div>
@@ -378,61 +273,37 @@
 
       <!-- Actions -->
       <div class="card-actions">
-        <button 
-          class="btn btn-info" 
-          (click)="goToBorneDetail(borne.id)"
-          [attr.aria-label]="'Voir les détails de la borne ' + (borne.title || borne.id)"
-          title="Voir les détails">
-          <i class="fas fa-info-circle" aria-hidden="true"></i>
-          Détails
-        </button>
-        
-        <button 
-          class="btn btn-secondary" 
-          (click)="openMaps(borne.latitude, borne.longitude)"
-          [attr.aria-label]="'Ouvrir dans Maps pour la borne ' + (borne.title || borne.id)"
-          title="Ouvrir dans Maps">
-          <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
-          Maps
+        <!-- Dans la carte de borne -->
+<button class="btn btn-info" (click)="goToBorneDetail(borne.id)" title="Voir les détails">
+  <i class="fas fa-info-circle" aria-hidden="true"></i> Détails
+</button>
+        <button class="btn btn-secondary" (click)="openMaps(borne.latitude, borne.longitude)" title="Ouvrir dans Maps">
+          <i class="fas fa-map-marked-alt" aria-hidden="true"></i> Maps
         </button>
 
-        <button 
-          class="btn btn-success" 
-          *ngIf="estDisponible(borne) && !sessionActive"
-          (click)="demarrerRecharge(borne)"
-          [disabled]="loadingAction && selectedBorneId === borne.id"
-          [attr.aria-label]="'Démarrer la recharge sur la borne ' + (borne.title || borne.id)"
-          title="Démarrer la recharge">
+        <button class="btn btn-success" *ngIf="estDisponible(borne) && !sessionActive"
+                (click)="demarrerRecharge(borne)" [disabled]="loadingAction && selectedBorneId === borne.id">
           <i class="fas fa-play" *ngIf="!(loadingAction && selectedBorneId === borne.id)" aria-hidden="true"></i>
           <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id" aria-hidden="true"></i>
           Démarrer
         </button>
 
-        <button 
-          class="btn btn-danger" 
-          *ngIf="estSessionUtilisateur(borne)"
-          (click)="arreterRecharge(borne)"
-          [disabled]="loadingAction && selectedBorneId === borne.id"
-          [attr.aria-label]="'Arrêter la recharge sur la borne ' + (borne.title || borne.id)"
-          title="Arrêter la recharge">
+        <button class="btn btn-danger" *ngIf="estSessionUtilisateur(borne)"
+                (click)="arreterRecharge(borne)" [disabled]="loadingAction && selectedBorneId === borne.id">
           <i class="fas fa-stop" *ngIf="!(loadingAction && selectedBorneId === borne.id)" aria-hidden="true"></i>
           <i class="fas fa-spinner fa-spin" *ngIf="loadingAction && selectedBorneId === borne.id" aria-hidden="true"></i>
           Arrêter
         </button>
 
-        <button 
-          class="btn btn-primary" 
-          *ngIf="borne.isOccupied && !estSessionUtilisateur(borne) && borne.sessionId"
-          (click)="voirSession(borne.sessionId!)"
-          [attr.aria-label]="'Voir la session de la borne ' + (borne.title || borne.id)"
-          title="Voir la session">
+        <button class="btn btn-primary" *ngIf="borne.isOccupied && !estSessionUtilisateur(borne) && borne.sessionId"
+                (click)="voirSession(borne.sessionId!)" title="Voir la session">
           <i class="fas fa-eye" aria-hidden="true"></i>
         </button>
       </div>
     </article>
 
     <!-- Aucun résultat -->
-    <div class="no-results" *ngIf="filteredBornes.length === 0" role="status">
+    <div class="no-results" *ngIf="filteredBornes.length === 0">
       <div class="no-results-icon">
         <i class="fas fa-search" aria-hidden="true"></i>
       </div>
@@ -440,12 +311,10 @@
       <p>Essayez de modifier vos filtres de recherche</p>
       <div class="no-results-actions">
         <button class="btn btn-primary" (click)="resetFilters()">
-          <i class="fas fa-undo" aria-hidden="true"></i>
-          Réinitialiser les filtres
+          <i class="fas fa-undo" aria-hidden="true"></i> Réinitialiser les filtres
         </button>
         <button class="btn btn-secondary" (click)="loadBornes()">
-          <i class="fas fa-sync" aria-hidden="true"></i>
-          Recharger
+          <i class="fas fa-sync" aria-hidden="true"></i> Recharger
         </button>
       </div>
     </div>
@@ -454,40 +323,24 @@
   <!-- ============================================================
        PAGINATION
        ============================================================ -->
-  <nav 
-    class="pagination" 
-    *ngIf="totalPages > 1 && !loading"
-    aria-label="Pagination des bornes">
-    
-    <button 
-      class="btn btn-page" 
-      (click)="previousPage()" 
-      [disabled]="currentPage === 0"
-      aria-label="Page précédente">
+  <nav class="pagination" *ngIf="totalPages > 1 && !loading">
+    <button class="btn btn-page" (click)="previousPage()" [disabled]="currentPage === 0">
       <i class="fas fa-chevron-left" aria-hidden="true"></i>
     </button>
     
-    <button 
-      class="btn btn-page" 
-      *ngFor="let page of getPages()"
-      [class.active]="page === currentPage"
-      (click)="goToPage(page)"
-      [attr.aria-label]="'Aller à la page ' + (page + 1)"
-      [attr.aria-current]="page === currentPage ? 'page' : null">
+    <button class="btn btn-page" *ngFor="let page of getPages()"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
       {{ page + 1 }}
     </button>
     
-    <button 
-      class="btn btn-page" 
-      (click)="nextPage()" 
-      [disabled]="currentPage >= totalPages - 1"
-      aria-label="Page suivante">
+    <button class="btn btn-page" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
       <i class="fas fa-chevron-right" aria-hidden="true"></i>
     </button>
   </nav>
 
   <!-- ============================================================
-       STATISTIQUES DE CHARGEMENT
+       STATISTIQUES
        ============================================================ -->
   <div class="stats-footer" *ngIf="!loading && filteredBornes.length > 0">
     <span class="stats-text">
@@ -508,7 +361,6 @@
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-grid">
-        <!-- Brand -->
         <div class="footer-brand">
           <a routerLink="/" class="logo">
             <span class="logo-icon">⚡</span>
@@ -523,7 +375,6 @@
           </div>
         </div>
 
-        <!-- Liens rapides -->
         <div class="footer-links">
           <h4>Liens rapides</h4>
           <ul>
@@ -535,7 +386,6 @@
           </ul>
         </div>
 
-        <!-- Ressources -->
         <div class="footer-links">
           <h4>Ressources</h4>
           <ul>
@@ -546,7 +396,6 @@
           </ul>
         </div>
 
-        <!-- Contact -->
         <div class="footer-contact">
           <h4>Contact</h4>
           <ul>

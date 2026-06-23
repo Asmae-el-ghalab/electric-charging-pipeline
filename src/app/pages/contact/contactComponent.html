@@ -1,28 +1,9 @@
 <!-- src/app/pages/contact/contactComponent.html -->
 <div class="contact-container">
   <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <a routerLink="/" class="logo"></a>
-      <ul class="nav-links">
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a></li>
-        <li><a routerLink="/carte" routerLinkActive="active">Carte</a></li>
-        <li><a routerLink="/bornes" routerLinkActive="active">Bornes</a></li>
-        <li><a routerLink="/a-propos" routerLinkActive="active">À propos</a></li>
-        <li><a routerLink="/contact" routerLinkActive="active" class="active">Contact</a></li>
-      </ul>
-      <div class="auth-buttons">
-        <a routerLink="/connexion" class="btn-outline">Connexion</a>
-        <a routerLink="/inscription" class="btn-primary">Inscription</a>
-      </div>
-      <button class="mobile-menu-btn" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-    </div>
-  </nav>
-
+ <section class="navigation-section">
+    <app-navbar></app-navbar>
+  </section>
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-overlay"></div>

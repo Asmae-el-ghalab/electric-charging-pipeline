@@ -1,22 +1,153 @@
-<nav class="navbar">
+<!-- src/app/components/navbar/navbar.component.html -->
+<nav class="navbar" [class.scrolled]="isScrolled()" [class.loading]="isLoading()">
   <div class="nav-container">
     <!-- Logo -->
-  <a routerLink="/" class="logo"></a>
-    <!-- Liens de navigation -->
-    <ul class="nav-links">
-      <li>
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
-      </li>
-      <li><a routerLink="/carte" routerLinkActive="active">Carte</a></li>
-      <li><a routerLink="/bornes" routerLinkActive="active">Bornes</a></li>
-      <li><a routerLink="/a-propos" routerLinkActive="active">À propos</a></li>
-      <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
+    <a routerLink="/" class="logo">
+      <img src="/assets/img/logo.png" alt="RechargeMaroc Logo" class="logo-img">
+     
+    </a>
+
+    <!-- Navigation Links -->
+    <ul class="nav-links" [class.active]="menuOpen()">
+      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Accueil</a></li>
+      <li><a routerLink="/carte" routerLinkActive="active" (click)="closeMenu()">Carte</a></li>
+      <li><a routerLink="/bornes" routerLinkActive="active" (click)="closeMenu()">Bornes</a></li>
+      <li><a routerLink="/a-propos" routerLinkActive="active" (click)="closeMenu()">À propos</a></li>
+      <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
     </ul>
 
-    <!-- Boutons auth -->
-    <div class="auth-buttons">
-      <a routerLink="/connexion" class="btn-outline">Connexion</a>
-      <a routerLink="/inscription" class="btn-primary">Inscription</a>
+    <!-- Auth Buttons Desktop -->
+    <div class="auth-buttons" *ngIf="!isLoggedIn()">
+      <a routerLink="/connexion" class="btn-outline" (click)="closeMenu()">
+        <i class="fas fa-sign-in-alt"></i> Connexion
+      </a>
+      <a routerLink="/inscription" class="btn-primary" (click)="closeMenu()">
+        <i class="fas fa-user-plus"></i> Inscription
+      </a>
     </div>
+
+    <!-- User Profile Desktop -->
+    <div class="user-profile" *ngIf="isLoggedIn()">
+      <div class="user-dropdown">
+        <button 
+          class="user-btn" 
+          (click)="toggleDropdown()" 
+          [attr.aria-expanded]="dropdownOpen()"
+          [attr.aria-label]="getDropdownAriaLabel()"
+          type="button"
+          [disabled]="isLoading()">
+          <span class="user-avatar">{{ userInitial() }}</span>
+          <span class="user-name">{{ userName() }}</span>
+          <span class="user-role-badge" *ngIf="isAdmin()">Admin</span>
+          <i class="fas fa-chevron-down" [class.rotated]="dropdownOpen()"></i>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div class="dropdown-menu" [class.show]="dropdownOpen()" role="menu">
+          <div class="dropdown-header">
+            <span class="dropdown-avatar">{{ userInitial() }}</span>
+            <div class="dropdown-user-info">
+              <strong>{{ userName() }}</strong>
+              <span class="dropdown-user-email">{{ userEmail() }}</span>
+            </div>
+          </div>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a routerLink="/conducteur/dashboard" class="dropdown-item" (click)="closeDropdown()" role="menuitem">
+            <i class="fas fa-user"></i> Mon profil
+          </a>
+          
+          <a routerLink="/conducteur/dashboard" class="dropdown-item" (click)="closeDropdown()" role="menuitem">
+            <i class="fas fa-history"></i> Mes sessions
+          </a>
+          
+          <ng-container *ngIf="isAdmin()">
+            <div class="dropdown-divider"></div>
+            <a routerLink="/admin/dashboard" class="dropdown-item admin" (click)="closeDropdown()" role="menuitem">
+              <i class="fas fa-cog"></i> Administration
+            </a>
+          </ng-container>
+          
+          <ng-container *ngIf="isConducteur()">
+            <div class="dropdown-divider"></div>
+            <a routerLink="/conducteur/dashboard" class="dropdown-item" (click)="closeDropdown()" role="menuitem">
+              <i class="fas fa-route"></i> Mes trajets
+            </a>
+          </ng-container>
+          
+          <div class="dropdown-divider"></div>
+          
+          <button (click)="logout()" class="dropdown-item logout" role="menuitem" type="button" [disabled]="isLoading()">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+            <span class="loading-spinner" *ngIf="isLoading()"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button 
+      class="mobile-menu-btn" 
+      [class.active]="menuOpen()" 
+      (click)="toggleMenu()" 
+      [attr.aria-expanded]="menuOpen()"
+      [attr.aria-label]="getButtonAriaLabel()"
+      type="button"
+      [disabled]="isLoading()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </nav>
+
+<!-- Mobile Auth Section -->
+<div class="mobile-auth" [class.active]="menuOpen()" *ngIf="menuOpen()">
+  <!-- Non-authenticated -->
+  <div *ngIf="!isLoggedIn()" class="mobile-auth-buttons">
+    <a routerLink="/connexion" class="btn-outline mobile" (click)="closeMenu()">
+      <i class="fas fa-sign-in-alt"></i> Connexion
+    </a>
+    <a routerLink="/inscription" class="btn-primary mobile" (click)="closeMenu()">
+      <i class="fas fa-user-plus"></i> Inscription
+    </a>
+  </div>
+  
+  <!-- Authenticated -->
+  <div *ngIf="isLoggedIn()" class="mobile-user-info">
+    <div class="mobile-user-header">
+      <span class="mobile-user-avatar">{{ userInitial() }}</span>
+      <div class="mobile-user-details">
+        <span class="mobile-user-name">{{ userName() }}</span>
+        <span class="mobile-user-role">{{ userRole() }}</span>
+        <span class="mobile-user-email">{{ userEmail() }}</span>
+      </div>
+    </div>
+    
+    <div class="mobile-user-actions">
+      <a routerLink="/profil" class="mobile-action" (click)="closeMenu()">
+        <i class="fas fa-user"></i> Mon profil
+      </a>
+      <a routerLink="/mes-sessions" class="mobile-action" (click)="closeMenu()">
+        <i class="fas fa-history"></i> Mes sessions
+      </a>
+      
+      <ng-container *ngIf="isAdmin()">
+        <a routerLink="/admin/dashboard" class="mobile-action admin" (click)="closeMenu()">
+          <i class="fas fa-cog"></i> Administration
+        </a>
+      </ng-container>
+      
+      <button (click)="logout()" class="btn-danger mobile-logout" type="button" [disabled]="isLoading()">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+        <span class="loading-spinner" *ngIf="isLoading()"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="navbar-loading-overlay" *ngIf="isLoading()">
+  <div class="spinner"></div>
+</div>

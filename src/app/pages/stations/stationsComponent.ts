@@ -1,18 +1,18 @@
 // src/app/pages/stations/stationsComponent.ts
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { StationsService, Borne, SessionRecharge } from '../../../services/stations.service';
+import { StationsService, Borne, SessionRecharge, Connection } from '../../../services/stations.service';
 import { NotificationService } from '../../../services/notification.service';
 import { AuthService } from '../../../services/auth.service';
-import { Subject, interval, takeUntil, switchMap, catchError, of, timeout, finalize, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, interval, takeUntil, switchMap, catchError, of, timeout, finalize, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { NavbarComponent } from '../../components/navbar/navbarComponent';
 
 @Component({
   selector: 'app-stations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, RouterModule,NavbarComponent],
   templateUrl: './stationsComponent.html',
   styleUrl: './stationsComponent.css'
 })
@@ -49,6 +49,10 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   operateurs: string[] = [];
   statusList = ['Operational', 'Maintenance', 'OutOfService', 'Planned'];
   
+  // Navbar
+  isScrolled = false;
+  menuOpen = false;
+  
   // Observables
   private destroy$ = new Subject<void>();
   private refreshInterval = 30000; // 30 secondes
@@ -65,13 +69,8 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   
   ngOnInit(): void {
     console.log('🚀 StationsComponent initialisé');
-    this.userId = this.authService.getUserId();
-    console.log('👤 ID utilisateur récupéré:', this.userId);
-    
-    // Chargement initial des données
+    this.checkUserAuthentication();
     this.loadBornes();
-    
-    // Configuration du rafraîchissement automatique
     this.setupAutoRefresh();
   }
   
@@ -87,15 +86,52 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  // ============================================================
+  // NAVBAR
+  // ============================================================
   
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    this.isScrolled = window.scrollY > 50;
+  }
+  
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  // ============================================================
+  // AUTHENTIFICATION
+  // ============================================================
+  
+  private checkUserAuthentication(): void {
+    this.userId = this.authService.getUserId();
+    console.log('👤 ID utilisateur récupéré:', this.userId);
+    
+    if (!this.userId) {
+      console.log('⚠️ Utilisateur non connecté, redirection vers la page de connexion');
+      this.notificationService.warning('Veuillez vous connecter pour accéder aux bornes');
+      this.router.navigate(['/connexion']);
+      return;
+    }
+    
+    if (this.userId) {
+      console.log('✅ Utilisateur connecté, vérification de la session active');
+      this.verifierSessionActive();
+    }
+  }
+
   // ============================================================
   // RÉCUPÉRATION DES DONNÉES
   // ============================================================
   
-  /**
-   * Charge les bornes depuis l'API
-   */
   loadBornes(): void {
+    if (!this.userId) {
+      console.warn('⚠️ Utilisateur non connecté, chargement des bornes annulé');
+      this.router.navigate(['/connexion']);
+      return;
+    }
+    
     this.loading = true;
     console.log('📡 Chargement des bornes - Page:', this.currentPage, 'Taille:', this.pageSize);
     
@@ -126,25 +162,26 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('📊 Nombre de bornes:', response.content?.length || 0);
           
           // Traitement des données
-          this.bornes = (response.content || []).map((borne: Borne) => ({
-            ...borne,
-            isOccupied: borne.isOccupied === true,
-            sessionId: borne.sessionId || undefined
+          this.bornes = (response.content || []).map((station: any) => ({
+            ...station,
+            isOccupied: station.isOccupied === true,
+            sessionId: station.sessionId !== undefined && station.sessionId !== null ? station.sessionId : null,
+            connections: station.connections || []
           }));
+          
+          // Charger les connections pour chaque borne
+          this.loadConnectionsForBornes();
           
           this.filteredBornes = [...this.bornes];
           this.totalPages = response.totalPages || 0;
           this.totalElements = response.totalElements || 0;
           
-          // Extraction des filtres
           this.extractFilters();
           
-          // Application des filtres si actifs
           if (this.filterStatus || this.filterCity || this.filterOperator) {
             this.applyFilters();
           }
           
-          // Mise à jour de la session active
           this.updateSessionState();
           
           console.log('✅ Bornes chargées avec succès');
@@ -153,23 +190,42 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   /**
-   * Rafraîchit les données manuellement
+   * Charge les connections pour chaque borne
    */
-   isScrolled = false;  // ✅ Ajouter cette propriété
-  menuOpen = false;    // ✅ Ajouter pour le menu mobile
-  
-  // ... reste du code ...
-  
-  // ✅ Ajouter la méthode pour le menu mobile
-  toggleMenu(): void {
-    this.menuOpen = !this.menuOpen;
+  loadConnectionsForBornes(): void {
+    if (!this.bornes || this.bornes.length === 0) {
+      return;
+    }
+    
+    console.log('🔄 Chargement des connections pour', this.bornes.length, 'bornes');
+    
+    const observables = this.bornes.map(borne => 
+      this.stationsService.getStationConnections(borne.id).pipe(
+        catchError(err => {
+          console.error(`❌ Erreur chargement connections pour borne ${borne.id}:`, err);
+          return of([]);
+        })
+      )
+    );
+    
+    forkJoin(observables).subscribe({
+      next: (allConnections) => {
+        allConnections.forEach((connections, index) => {
+          if (this.bornes[index]) {
+            this.bornes[index].connections = connections;
+            console.log(`✅ Connections chargées pour borne ${this.bornes[index].id}: ${connections.length}`);
+          }
+        });
+        this.applyFilters();
+        this.cdr.detectChanges();
+        console.log('✅ Toutes les connections chargées');
+      },
+      error: (err) => {
+        console.error('❌ Erreur lors du chargement des connections:', err);
+      }
+    });
   }
   
-  // ✅ Ajouter la méthode pour gérer le scroll
- 
-  onWindowScroll() {
-    this.isScrolled = window.scrollY > 50;
-  }
   refreshData(): void {
     if (this.isRefreshing || this.loading) return;
     
@@ -200,9 +256,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  /**
-   * Configuration du rafraîchissement automatique
-   */
   private setupAutoRefresh(): void {
     interval(this.refreshInterval)
       .pipe(
@@ -239,9 +292,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  /**
-   * Met à jour l'état des bornes
-   */
   private updateBornesState(response: any): void {
     if (!response || !response.content || !Array.isArray(response.content)) {
       console.warn('⚠️ Réponse invalide pour la mise à jour des bornes');
@@ -249,9 +299,14 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const borneMap = new Map<number, Borne>();
-    response.content.forEach((borne: Borne) => {
-      if (borne && borne.id) {
-        borneMap.set(borne.id, borne);
+    response.content.forEach((station: any) => {
+      if (station && station.id) {
+        const sessionId = station.sessionId !== undefined && station.sessionId !== null ? station.sessionId : null;
+        borneMap.set(station.id, {
+          ...station,
+          sessionId: sessionId,
+          connections: station.connections || []
+        });
       }
     });
     
@@ -263,8 +318,9 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       const borneMaj = borneMap.get(borne.id);
       if (borneMaj) {
         const newOccupied = 'isOccupied' in borneMaj ? borneMaj.isOccupied === true : false;
-        const newSessionId = 'sessionId' in borneMaj ? borneMaj.sessionId || undefined : undefined;
+        const newSessionId = 'sessionId' in borneMaj ? (borneMaj.sessionId !== undefined ? borneMaj.sessionId : null) : null;
         const newStatus = 'status' in borneMaj ? borneMaj.status : borne.status;
+        const newConnections = 'connections' in borneMaj ? borneMaj.connections || [] : borne.connections || [];
         
         if (borne.isOccupied !== newOccupied || 
             borne.sessionId !== newSessionId || 
@@ -277,6 +333,7 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
           borne.isOccupied = newOccupied;
           borne.sessionId = newSessionId;
           borne.status = newStatus;
+          borne.connections = newConnections;
           hasChanges = true;
         }
       }
@@ -294,9 +351,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   // GESTION DE LA SESSION
   // ============================================================
   
-  /**
-   * Vérifie si une session active existe
-   */
   verifierSessionActive(): void {
     console.log('🔍 Vérification session active...');
     
@@ -340,23 +394,18 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  /**
-   * Traite la réponse de la session
-   */
   private handleSessionResponse(sessionData: any): void {
     if (sessionData) {
       this.sessionActive = sessionData;
       
-      // Mise à jour de la borne correspondante
       const borne = this.bornes.find(b => b.id === sessionData.borneId);
       if (borne) {
         console.log('📍 Borne trouvée pour la session:', borne.id, borne.title);
         borne.isOccupied = true;
-        borne.sessionId = sessionData.id;
+        borne.sessionId = sessionData.id || null;
         this.applyFilters();
       } else {
         console.log('⚠️ Borne non trouvée pour la session');
-        // Rechargement si la borne n'est pas dans la liste
         if (this.bornes.length === 0) {
           this.loadBornes();
         }
@@ -369,15 +418,12 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  /**
-   * Met à jour l'état des sessions
-   */
   private updateSessionState(): void {
     if (this.sessionActive) {
       const borne = this.bornes.find(b => b.id === this.sessionActive?.borneId);
       if (borne) {
         borne.isOccupied = true;
-        borne.sessionId = this.sessionActive.id;
+        borne.sessionId = this.sessionActive.id || null;
         this.applyFilters();
       }
     }
@@ -387,9 +433,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   // FILTRES
   // ============================================================
   
-  /**
-   * Extrait les valeurs uniques pour les filtres
-   */
   extractFilters(): void {
     console.log('🔍 Extraction des filtres...');
     const villesSet = new Set<string>();
@@ -413,9 +456,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log(`🏙️ ${this.villes.length} villes, ${this.operateurs.length} opérateurs`);
   }
   
-  /**
-   * Applique les filtres
-   */
   applyFilters(): void {
     let resultats = [...this.bornes];
     
@@ -442,9 +482,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
   
-  /**
-   * Réinitialise les filtres
-   */
   resetFilters(): void {
     console.log('🔄 Réinitialisation des filtres');
     this.filterStatus = '';
@@ -455,16 +492,10 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.notificationService.info('Filtres réinitialisés');
   }
   
-  /**
-   * Bascule l'affichage des filtres
-   */
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
   }
   
-  /**
-   * Gère le changement de filtre
-   */
   onFilterChange(): void {
     this.applyFilters();
   }
@@ -473,9 +504,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   // PAGINATION
   // ============================================================
   
-  /**
-   * Page précédente
-   */
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
@@ -483,9 +511,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  /**
-   * Page suivante
-   */
   nextPage(): void {
     if (this.currentPage < this.totalPages - 1) {
       this.currentPage++;
@@ -493,9 +518,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  /**
-   * Va à une page spécifique
-   */
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
@@ -503,9 +525,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  /**
-   * Génère les numéros de page
-   */
   getPages(): number[] {
     const pages: number[] = [];
     const total = this.totalPages;
@@ -542,12 +561,154 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   // ============================================================
-  // MÉTHODES UTILITAIRES
+  // MÉTHODES UTILITAIRES POUR LES CONNECTIONS
   // ============================================================
   
   /**
-   * Obtient la classe CSS pour le statut
+   * Récupère les types de connecteurs
    */
+  getConnectionTypes(borne: Borne): string {
+    if (!borne.connections || borne.connections.length === 0) {
+      return 'Non disponible';
+    }
+    
+    const types = borne.connections.map(conn => conn.connectionType);
+    const uniqueTypes = [...new Set(types)];
+    return uniqueTypes.join(', ');
+  }
+  
+  /**
+   * Récupère la puissance maximale
+   */
+  getMaxPower(borne: Borne): string {
+    if (!borne.connections || borne.connections.length === 0) {
+      return borne.power ? `${borne.power} kW` : 'N/A';
+    }
+    
+    const maxPower = Math.max(...borne.connections.map(conn => conn.powerKw || 0));
+    return `${maxPower} kW`;
+  }
+  
+  /**
+   * Récupère les détails complets des connecteurs
+   */
+  getConnectionDetails(borne: Borne): string {
+    if (!borne.connections || borne.connections.length === 0) {
+      return 'Aucun connecteur disponible';
+    }
+    
+    return borne.connections.map(conn => {
+      const parts = [
+        conn.connectionType,
+        `${conn.powerKw}kW`,
+        conn.quantity > 1 ? `x${conn.quantity}` : '',
+        conn.currentType || ''
+      ].filter(Boolean);
+      return parts.join(' ');
+    }).join(' | ');
+  }
+  
+  /**
+   * Récupère le nombre total de connecteurs
+   */
+  getTotalConnectors(borne: Borne): number {
+    if (!borne.connections || borne.connections.length === 0) {
+      return 0;
+    }
+    return borne.connections.reduce((sum, conn) => sum + (conn.quantity || 0), 0);
+  }
+  
+  /**
+   * Vérifie si la borne a un type de connecteur spécifique
+   */
+  hasConnectionType(borne: Borne, type: string): boolean {
+    if (!borne.connections) return false;
+    return borne.connections.some(conn => 
+      conn.connectionType.toLowerCase().includes(type.toLowerCase())
+    );
+  }
+  
+  /**
+   * Récupère les connecteurs DC
+   */
+  getDCConnections(borne: Borne): Connection[] {
+    if (!borne.connections) return [];
+    return borne.connections.filter(conn => conn.currentType === 'DC');
+  }
+  
+  /**
+   * Récupère les connecteurs AC
+   */
+  getACConnections(borne: Borne): Connection[] {
+    if (!borne.connections) return [];
+    return borne.connections.filter(conn => conn.currentType === 'AC (Three-Phase)');
+  }
+  
+  /**
+   * Formate les connections pour l'affichage
+   */
+  formatConnections(borne: Borne): string {
+    if (!borne.connections || borne.connections.length === 0) {
+      return 'Aucun connecteur';
+    }
+    
+    return borne.connections.map(conn => {
+      const parts = [
+        conn.connectionType,
+        `${conn.powerKw}kW`,
+        conn.quantity > 1 ? `x${conn.quantity}` : ''
+      ].filter(Boolean);
+      return parts.join(' ');
+    }).join(' | ');
+  }
+
+  /**
+   * Récupère les types de connecteurs pour l'affichage en badge
+   */
+  getConnectionBadges(borne: Borne): string[] {
+    if (!borne.connections || borne.connections.length === 0) {
+      return ['Aucun'];
+    }
+    
+    return borne.connections.map(conn => {
+      let label = conn.connectionType;
+      if (conn.powerKw) {
+        label += ` ${conn.powerKw}kW`;
+      }
+      return label;
+    });
+  }
+
+  /**
+   * Récupère la puissance totale disponible
+   */
+  getTotalPower(borne: Borne): string {
+    if (!borne.connections || borne.connections.length === 0) {
+      return '0 kW';
+    }
+    
+    const total = borne.connections.reduce((sum, conn) => sum + (conn.powerKw || 0), 0);
+    return `${total} kW`;
+  }
+
+  /**
+   * Vérifie si la borne a des connecteurs DC
+   */
+  hasDCConnector(borne: Borne): boolean {
+    return borne.connections?.some(conn => conn.currentType === 'DC') || false;
+  }
+
+  /**
+   * Vérifie si la borne a des connecteurs AC
+   */
+  hasACConnector(borne: Borne): boolean {
+    return borne.connections?.some(conn => conn.currentType === 'AC (Three-Phase)') || false;
+  }
+  
+  // ============================================================
+  // MÉTHODES UTILITAIRES
+  // ============================================================
+  
   getStatusClass(status: string | undefined): string {
     if (!status) return 'status-planned';
     switch(status.toLowerCase()) {
@@ -559,9 +720,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  /**
-   * Obtient le texte du statut
-   */
   getStatusText(status: string | undefined): string {
     if (!status) return 'Statut inconnu';
     switch(status.toLowerCase()) {
@@ -574,9 +732,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  /**
-   * Obtient le nom de l'opérateur
-   */
   getOperatorName(operator: string | undefined | null): string {
     if (!operator || operator === '(Unknown Operator)' || operator === 'NULL' || operator === 'null') {
       return 'Opérateur inconnu';
@@ -584,18 +739,12 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     return operator;
   }
   
-  /**
-   * Vérifie si une borne est disponible
-   */
   estDisponible(borne: Borne): boolean {
     return borne.status === 'Operational' && 
            borne.isOccupied !== true && 
            !borne.sessionId;
   }
   
-  /**
-   * Vérifie si l'utilisateur a une session active sur la borne
-   */
   estSessionUtilisateur(borne: Borne): boolean {
     return this.sessionActive !== null && 
            this.sessionActive.borneId === borne.id &&
@@ -603,10 +752,7 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
            borne.sessionId === this.sessionActive.id;
   }
   
-  /**
-   * Calcule la durée de la session
-   */
-  getSessionDuration(debut: string): string {
+  getSessionDuration(debut: string | null | undefined): string {
     if (!debut) return '--:--';
     
     try {
@@ -634,9 +780,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
   // ACTIONS UTILISATEUR
   // ============================================================
   
-  /**
-   * Démarre une recharge
-   */
   demarrerRecharge(borne: Borne): void {
     console.log(`🚀 Tentative de démarrage recharge - Borne ${borne.id}`);
     
@@ -706,9 +849,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  /**
-   * Confirme et démarre la recharge
-   */
   private confirmerDemarrage(borne: Borne, conducteurId: string): void {
     this.loadingAction = true;
     
@@ -753,7 +893,7 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('✅ Session démarrée avec succès:', session);
           
           borne.isOccupied = true;
-          borne.sessionId = session.id;
+          borne.sessionId = session.id || null;
           this.sessionActive = session;
           this.applyFilters();
           
@@ -772,9 +912,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  /**
-   * Arrête une recharge
-   */
   arreterRecharge(borne: Borne): void {
     console.log(`🛑 Tentative arrêt recharge - Borne ${borne.id}`);
     
@@ -816,7 +953,7 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('✅ Session terminée avec succès:', session);
           
           borne.isOccupied = false;
-          borne.sessionId = undefined;
+          borne.sessionId = null;
           this.sessionActive = null;
           this.applyFilters();
           
@@ -827,9 +964,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  /**
-   * Voir les détails d'une session
-   */
   voirSession(sessionId: number): void {
     console.log(`👁️ Voir session ${sessionId}`);
     this.router.navigate(['/sessions', sessionId]).catch(() => {
@@ -837,17 +971,11 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
   
-  /**
-   * Voir les détails d'une borne
-   */
   goToBorneDetail(id: number): void {
     console.log(`👁️ Voir détails borne ${id}`);
-    this.router.navigate(['/borne', id]);
+    this.router.navigate(['/borne-detail', id]);
   }
   
-  /**
-   * Ouvre Google Maps
-   */
   openMaps(latitude: number, longitude: number): void {
     if (latitude && longitude) {
       window.open(`https://www.google.com/maps?q=${latitude},${longitude}`, '_blank');
@@ -856,13 +984,6 @@ export class StationsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   
-  // ============================================================
-  // MÉTHODE DE TEST
-  // ============================================================
-  
-  /**
-   * Test de navigation (pour débogage)
-   */
   testNavigation(): void {
     console.log('🧪 Test de navigation vers session 999');
     this.router.navigate(['/sessions', 999]);

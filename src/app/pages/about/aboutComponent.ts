@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { NavbarComponent } from '../../components/navbar/navbarComponent';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,NavbarComponent],
   templateUrl: './aboutComponent.html',
   styleUrl: './aboutComponent.css',
 })

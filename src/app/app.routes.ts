@@ -23,5 +23,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/session/session.component/session.component').then(m => m.SessionComponent),
     canActivate: [AuthGuard]
   },
+  { path: 'borne-detail/:id', loadComponent: () => import('./pages/borne-detail/borne-detail').then(m => m.BorneDetailComponent) },
   { path: '**', redirectTo: '' }
 ];
