@@ -1,3 +1,5 @@
+//test/java/com/bornemaroc/backend/BackendApplicationTests.java
+
 package com.bornemaroc.backend;
 
 import org.junit.jupiter.api.Test;
@@ -11,3 +13,4 @@ class BackendApplicationTests {
 	}
 
 }
+
