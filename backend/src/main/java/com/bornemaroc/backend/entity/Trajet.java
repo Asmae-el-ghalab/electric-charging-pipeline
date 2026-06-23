@@ -1,15 +1,10 @@
-// src/main/java/com/bornemaroc/backend/entity/Trajet.java
 package com.bornemaroc.backend.entity;
 
 import javax.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "trajets")
-@Data
-@NoArgsConstructor
 public class Trajet {
 
     @Id
@@ -58,6 +53,48 @@ public class Trajet {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public Trajet() {}
+
+    // ============ GETTERS ============
+    public Long getId() { return id; }
+    public Long getConducteurId() { return conducteurId; }
+    public Long getBorneId() { return borneId; }
+    public String getBorneNom() { return borneNom; }
+    public LocalDateTime getDateDebut() { return dateDebut; }
+    public LocalDateTime getDateFin() { return dateFin; }
+    public Integer getDureeMinutes() { return dureeMinutes; }
+    public Double getConsommationKwh() { return consommationKwh; }
+    public Double getCoutTotal() { return coutTotal; }
+    public Double getDistanceKm() { return distanceKm; }
+    public String getStatus() { return status; }
+    public String getVilleDepart() { return villeDepart; }
+    public String getVilleArrivee() { return villeArrivee; }
+    public String getVehicule() { return vehicule; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    // ============ SETTERS ============
+    public void setId(Long id) { this.id = id; }
+    public void setConducteurId(Long conducteurId) { this.conducteurId = conducteurId; }
+    public void setBorneId(Long borneId) { this.borneId = borneId; }
+    public void setBorneNom(String borneNom) { this.borneNom = borneNom; }
+    public void setDateDebut(LocalDateTime dateDebut) { this.dateDebut = dateDebut; }
+    public void setDateFin(LocalDateTime dateFin) { this.dateFin = dateFin; }
+    public void setDureeMinutes(Integer dureeMinutes) { this.dureeMinutes = dureeMinutes; }
+    public void setDureeMinutes(int dureeMinutes) { this.dureeMinutes = dureeMinutes; }
+    public void setConsommationKwh(Double consommationKwh) { this.consommationKwh = consommationKwh; }
+    public void setConsommationKwh(double consommationKwh) { this.consommationKwh = consommationKwh; }
+    public void setCoutTotal(Double coutTotal) { this.coutTotal = coutTotal; }
+    public void setCoutTotal(double coutTotal) { this.coutTotal = coutTotal; }
+    public void setDistanceKm(Double distanceKm) { this.distanceKm = distanceKm; }
+    public void setDistanceKm(double distanceKm) { this.distanceKm = distanceKm; }
+    public void setStatus(String status) { this.status = status; }
+    public void setVilleDepart(String villeDepart) { this.villeDepart = villeDepart; }
+    public void setVilleArrivee(String villeArrivee) { this.villeArrivee = villeArrivee; }
+    public void setVehicule(String vehicule) { this.vehicule = vehicule; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     @PrePersist
     protected void onCreate() {

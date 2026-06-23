@@ -1,12 +1,10 @@
 package com.bornemaroc.backend.entity;
 
 import javax.persistence.*;
-import lombok.Data;
 import java.util.Date;
 
 @Entity
 @Table(name = "notifications")
-@Data
 public class Notification {
     
     @Id
@@ -27,4 +25,25 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "conducteur_id")
     private Conducteur conducteur;
+    
+    public Notification() {}
+    
+    // ============ GETTERS ============
+    public Long getId() { return id; }
+    public String getTitre() { return titre; }
+    public String getMessage() { return message; }
+    public Date getDateCreation() { return dateCreation; }
+    public Boolean getEstLue() { return estLue; }
+    public String getType() { return type; }
+    public Conducteur getConducteur() { return conducteur; }
+    
+    // ============ SETTERS ============
+    public void setId(Long id) { this.id = id; }
+    public void setTitre(String titre) { this.titre = titre; }
+    public void setMessage(String message) { this.message = message; }
+    public void setDateCreation(Date dateCreation) { this.dateCreation = dateCreation; }
+    public void setEstLue(Boolean estLue) { this.estLue = estLue; }
+    public void setEstLue(boolean estLue) { this.estLue = estLue; }
+    public void setType(String type) { this.type = type; }
+    public void setConducteur(Conducteur conducteur) { this.conducteur = conducteur; }
 }

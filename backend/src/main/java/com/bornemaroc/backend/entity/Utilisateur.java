@@ -2,16 +2,12 @@ package com.bornemaroc.backend.entity;
 
 import com.bornemaroc.backend.enums.RoleUtilisateur;
 import javax.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "utilisateur")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Data
-@NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Utilisateur {
 
@@ -53,6 +49,40 @@ public class Utilisateur {
     
     @Column(name = "type_utilisateur")
     private String typeUtilisateur;
+    
+    public Utilisateur() {}
+    
+    // ============ GETTERS ============
+    public Long getId() { return id; }
+    public String getNom() { return nom; }
+    public String getEmail() { return email; }
+    public String getMotDePasse() { return motDePasse; }
+    public RoleUtilisateur getRole() { return role; }
+    public Date getDateInscription() { return dateInscription; }
+    public String getDtype() { return dtype; }
+    public String getVehicule() { return vehicule; }
+    public Date getDerniereConnexion() { return derniereConnexion; }
+    public Integer getNiveauAcces() { return niveauAcces; }
+    public Boolean getEstBloque() { return estBloque; }
+    public String getTypePrise() { return typePrise; }
+    public String getTypeUtilisateur() { return typeUtilisateur; }
+    
+    // ============ SETTERS ============
+    public void setId(Long id) { this.id = id; }
+    public void setNom(String nom) { this.nom = nom; }
+    public void setEmail(String email) { this.email = email; }
+    public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
+    public void setRole(RoleUtilisateur role) { this.role = role; }
+    public void setDateInscription(Date dateInscription) { this.dateInscription = dateInscription; }
+    public void setDtype(String dtype) { this.dtype = dtype; }
+    public void setVehicule(String vehicule) { this.vehicule = vehicule; }
+    public void setDerniereConnexion(Date derniereConnexion) { this.derniereConnexion = derniereConnexion; }
+    public void setNiveauAcces(Integer niveauAcces) { this.niveauAcces = niveauAcces; }
+    public void setNiveauAcces(int niveauAcces) { this.niveauAcces = niveauAcces; }
+    public void setEstBloque(Boolean estBloque) { this.estBloque = estBloque; }
+    public void setEstBloque(boolean estBloque) { this.estBloque = estBloque; }
+    public void setTypePrise(String typePrise) { this.typePrise = typePrise; }
+    public void setTypeUtilisateur(String typeUtilisateur) { this.typeUtilisateur = typeUtilisateur; }
     
     @PrePersist
     protected void onCreate() {
