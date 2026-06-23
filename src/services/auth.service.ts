@@ -1,4 +1,4 @@
-// src/app/services/auth.service.ts - Version corrigée
+// src/app/services/auth.service.ts - Version corrigée avec vérification de blocage
 
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -21,6 +21,7 @@ export interface LoginResponse {
   id?: number;
   message?: string;
   error?: string;
+  estBloque?: boolean; // ✅ AJOUT : Pour vérifier si l'utilisateur est bloqué
 }
 
 export interface RegisterRequest {
@@ -45,7 +46,7 @@ export interface RegisterResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8081/api/auth';
+ private apiUrl = 'http://localhost:8081/api/utilisateurs';
   
   private userSubject = new BehaviorSubject<any>(null);
   public user$ = this.userSubject.asObservable();
@@ -71,6 +72,7 @@ export class AuthService {
       const userRole = localStorage.getItem('userRole');
       const userName = localStorage.getItem('userName');
       const userEmail = localStorage.getItem('userEmail');
+      const estBloque = localStorage.getItem('estBloque') === 'true'; // ✅ AJOUT
       
       if (token && userId) {
         const user = {
@@ -78,7 +80,8 @@ export class AuthService {
           role: userRole,
           nom: userName,
           email: userEmail,
-          token: token
+          token: token,
+          estBloque: estBloque // ✅ AJOUT
         };
         this.userSubject.next(user);
         console.log('✅ Utilisateur chargé depuis localStorage:', user);
@@ -131,6 +134,7 @@ export class AuthService {
     return this.extractUserIdFromToken(token);
   }
 
+  // ========== ✅ LOGIN AVEC VÉRIFICATION DE BLOCAGE ==========
   login(credentials: LoginRequest): Observable<LoginResponse> {
     console.log('📤 Envoi de la requête login:', credentials.email);
     
@@ -139,12 +143,20 @@ export class AuthService {
         tap(response => {
           console.log('📥 Réponse login reçue:', response);
           
+          // ✅ VÉRIFICATION : Si l'utilisateur est bloqué
+          if (response.estBloque === true) {
+            console.log('🚫 Utilisateur bloqué !');
+            // Ne pas stocker l'utilisateur, simplement renvoyer l'erreur
+            throw new Error('❌ Votre compte est bloqué. Veuillez contacter l\'administrateur.');
+          }
+          
           if (response.token && !response.error && this.isBrowser()) {
             // ✅ Stocker le token
             localStorage.setItem('token', response.token);
             localStorage.setItem('userRole', response.role);
             localStorage.setItem('userName', response.nom);
             localStorage.setItem('userEmail', response.email);
+            localStorage.setItem('estBloque', String(response.estBloque || false)); // ✅ AJOUT
             
             // ✅ Récupérer l'ID depuis le token
             let userId: string | null = null;
@@ -207,7 +219,8 @@ export class AuthService {
               role: response.role,
               nom: response.nom,
               email: response.email,
-              token: response.token
+              token: response.token,
+              estBloque: response.estBloque || false // ✅ AJOUT
             };
             this.userSubject.next(user);
             
@@ -247,7 +260,7 @@ export class AuthService {
       console.log('✅ Données utilisateur effacées');
     }
     
-    this.router.navigate(['/']);
+    this.router.navigate(['/connexion']);
   }
 
   isLoggedIn(): boolean {
@@ -334,8 +347,16 @@ export class AuthService {
       role: this.getUserRole(),
       nom: this.getUserName(),
       email: this.getUserEmail(),
-      token: this.getToken()
+      token: this.getToken(),
+      estBloque: localStorage.getItem('estBloque') === 'true' // ✅ AJOUT
     };
+  }
+
+  // ========== ✅ VÉRIFIER SI L'UTILISATEUR EST BLOQUÉ ==========
+  isBlocked(): boolean {
+    if (!this.isBrowser()) return false;
+    const estBloque = localStorage.getItem('estBloque');
+    return estBloque === 'true';
   }
 
   isAdmin(): boolean {
@@ -353,6 +374,21 @@ export class AuthService {
     return role === 'PASSAGER' || role === 'ROLE_PASSAGER';
   }
 
+  // ========== ✅ METTRE À JOUR LE STATUT DE BLOCAGE ==========
+  updateBlockedStatus(estBloque: boolean): void {
+    if (!this.isBrowser()) return;
+    localStorage.setItem('estBloque', String(estBloque));
+    
+    const currentUser = this.userSubject.value;
+    if (currentUser) {
+      this.userSubject.next({
+        ...currentUser,
+        estBloque: estBloque
+      });
+    }
+    console.log(`✅ Statut de blocage mis à jour: ${estBloque}`);
+  }
+
   updateUserInfo(userData: Partial<any>): void {
     if (!this.isBrowser()) return;
     
@@ -364,6 +400,9 @@ export class AuthService {
     }
     if (userData['role']) {
       localStorage.setItem('userRole', userData['role']);
+    }
+    if (userData['estBloque'] !== undefined) {
+      localStorage.setItem('estBloque', String(userData['estBloque']));
     }
     
     const currentUser = this.userSubject.value;
@@ -379,6 +418,17 @@ export class AuthService {
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Une erreur est survenue';
+    
+    // ✅ VÉRIFICATION : Si le serveur renvoie 403 (bloqué)
+    if (error.status === 403) {
+      errorMessage = '❌ Votre compte est bloqué. Veuillez contacter l\'administrateur.';
+      console.error('🚫 Compte bloqué !');
+      return throwError(() => ({ 
+        error: errorMessage, 
+        status: error.status,
+        blocked: true 
+      }));
+    }
     
     if (error.error instanceof ErrorEvent) {
       errorMessage = error.error.message;
@@ -411,10 +461,12 @@ export class AuthService {
     console.log('getUserName():', this.getUserName());
     console.log('getUserEmail():', this.getUserEmail());
     console.log('getToken():', this.getToken() ? '✅ Présent' : '❌ Absent');
+    console.log('isBlocked():', this.isBlocked());
     console.log('localStorage userId:', localStorage.getItem('userId'));
     console.log('localStorage token:', localStorage.getItem('token') ? '✅ Présent' : '❌ Absent');
     console.log('localStorage userRole:', localStorage.getItem('userRole'));
     console.log('localStorage userName:', localStorage.getItem('userName'));
+    console.log('localStorage estBloque:', localStorage.getItem('estBloque'));
     console.log('================================');
   }
 }

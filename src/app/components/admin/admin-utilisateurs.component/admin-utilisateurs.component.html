@@ -1,0 +1,235 @@
+<div class="admin-container">
+  <!-- Header -->
+  <div class="admin-header">
+    <div>
+      <h1 class="admin-title">👥 Gestion des utilisateurs</h1>
+      <p class="admin-subtitle">Gérez tous les utilisateurs de la plateforme</p>
+    </div>
+    <div class="admin-actions">
+      <button class="btn-refresh" (click)="loadUtilisateurs()">
+        🔄 Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div>
+        <div class="stat-value">{{stats.total}}</div>
+        <div class="stat-label">Total</div>
+      </div>
+    </div>
+    <div class="stat-card stat-active">
+      <div class="stat-icon">🟢</div>
+      <div>
+        <div class="stat-value">{{stats.actifs}}</div>
+        <div class="stat-label">Actifs</div>
+      </div>
+    </div>
+    <div class="stat-card stat-blocked">
+      <div class="stat-icon">🔒</div>
+      <div>
+        <div class="stat-value">{{stats.bloques}}</div>
+        <div class="stat-label">Bloqués</div>
+      </div>
+    </div>
+    <div class="stat-card stat-admin">
+      <div class="stat-icon">👑</div>
+      <div>
+        <div class="stat-value">{{stats.admins}}</div>
+        <div class="stat-label">Admins</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <span>🔍</span>
+      <input
+        type="text"
+        placeholder="Rechercher un utilisateur..."
+        (input)="onSearch($event)"
+        class="search-input"
+      />
+    </div>
+    <select class="filter-select" (change)="onFilterRole($event)">
+      <option>Tous les rôles</option>
+      <option>ADMIN</option>
+      <option>CONDUCTEUR</option>
+      <option>VISITEUR</option>
+    </select>
+    <select class="filter-select" (change)="onFilterStatus($event)">
+      <option>Tous les statuts</option>
+      <option>Actif</option>
+      <option>Bloqué</option>
+      <option>Inactif</option>
+    </select>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des utilisateurs...</p>
+  </div>
+
+  <!-- Tableau -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôle</th>
+          <th>Inscription</th>
+          <th>Dernière connexion</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUtilisateurs" 
+            (click)="selectUtilisateur(user)"
+            class="user-row">
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar" 
+                   [style.background]="getAvatarColor(user.nom)"
+                   [style.color]="getAvatarTextColor(user.nom)">
+                {{getInitials(user.nom)}}
+              </div>
+              <div class="user-info">
+                <div class="user-name">{{user.nom}}</div>
+                <div class="user-email">{{user.email}}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="role-badge" [class]="getRoleClass(user.role)">
+              {{getRoleLabel(user.role)}}
+            </span>
+          </td>
+          <td class="date-cell">{{formatDate(user.dateInscription)}}</td>
+          <td class="date-cell">{{formatDate(user.derniereConnexion)}}</td>
+          <td>
+            <span class="status-badge" [class]="getStatusClass(user)">
+              {{getStatusIcon(user)}} {{getStatusLabel(user)}}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons" (click)="$event.stopPropagation()">
+              <button class="btn-action btn-view" 
+                      (click)="selectUtilisateur(user)" 
+                      title="Voir détails">
+                👁️
+              </button>
+              <button class="btn-action btn-block" 
+                      [class.btn-unblock]="user.estBloque"
+                      (click)="toggleBloquer(user)" 
+                      [title]="user.estBloque ? 'Débloquer' : 'Bloquer'">
+                {{user.estBloque ? '🔓' : '🔒'}}
+              </button>
+              <button class="btn-action btn-promote" 
+                      *ngIf="user.role !== 'ADMIN'"
+                      (click)="promouvoirAdmin(user)" 
+                      title="Promouvoir en admin">
+                👑
+              </button>
+              <button class="btn-action btn-delete" 
+                      (click)="supprimerUtilisateur(user)" 
+                      title="Supprimer">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredUtilisateurs.length === 0">
+          <td colspan="6" class="empty-state">
+            <p>Aucun utilisateur trouvé</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Détails de l'utilisateur -->
+  <div class="detail-panel" *ngIf="selectedUtilisateur">
+    <div class="detail-header">
+      <div class="detail-title">
+        <span>👤 Fiche utilisateur</span>
+        <span class="detail-name">{{selectedUtilisateur.nom}}</span>
+      </div>
+      <button class="btn-close-detail" (click)="clearSelection()">✕</button>
+    </div>
+
+    <div class="detail-body">
+      <div class="detail-profile">
+        <div class="profile-avatar"
+             [style.background]="getAvatarColor(selectedUtilisateur.nom)"
+             [style.color]="getAvatarTextColor(selectedUtilisateur.nom)">
+          {{getInitials(selectedUtilisateur.nom)}}
+        </div>
+        <div class="profile-name">{{selectedUtilisateur.nom}}</div>
+        <div class="profile-email">{{selectedUtilisateur.email}}</div>
+        <span class="role-badge" [class]="getRoleClass(selectedUtilisateur.role)">
+          {{getRoleLabel(selectedUtilisateur.role)}}
+        </span>
+        <span class="status-badge" [class]="getStatusClass(selectedUtilisateur)">
+          {{getStatusIcon(selectedUtilisateur)}} {{getStatusLabel(selectedUtilisateur)}}
+        </span>
+      </div>
+
+      <div class="detail-info">
+        <h4>Informations</h4>
+        <div class="info-row">
+          <span class="info-label">📅 Inscription</span>
+          <span class="info-value">{{formatDateFull(selectedUtilisateur.dateInscription)}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🔄 Dernière connexion</span>
+          <span class="info-value">{{formatDateFull(selectedUtilisateur.derniereConnexion)}}</span>
+        </div>
+        <div class="info-row" *ngIf="selectedUtilisateur.vehicule">
+          <span class="info-label">🚗 Véhicule</span>
+          <span class="info-value">{{selectedUtilisateur.vehicule}}</span>
+        </div>
+        <div class="info-row" *ngIf="selectedUtilisateur.typePrise">
+          <span class="info-label">🔌 Prise préférée</span>
+          <span class="info-value">{{selectedUtilisateur.typePrise}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🔑 Niveau d'accès</span>
+          <span class="info-value">{{selectedUtilisateur.niveauAcces || 1}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📋 Type</span>
+          <span class="info-value">{{selectedUtilisateur.typeUtilisateur || 'Conducteur'}}</span>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <h4>Actions</h4>
+        <button class="detail-btn btn-promote" 
+                *ngIf="selectedUtilisateur.role !== 'ADMIN'"
+                (click)="promouvoirAdmin(selectedUtilisateur)">
+          👑 Promouvoir admin
+        </button>
+        <button class="detail-btn btn-demote" 
+                *ngIf="selectedUtilisateur.role === 'ADMIN'"
+                (click)="retrograderAdmin(selectedUtilisateur)">
+          ⬇️ Rétrograder
+        </button>
+        <button class="detail-btn btn-block" 
+                (click)="toggleBloquer(selectedUtilisateur)">
+          {{selectedUtilisateur.estBloque ? '🔓 Débloquer' : '🔒 Bloquer'}}
+        </button>
+        <button class="detail-btn btn-delete" 
+                (click)="supprimerUtilisateur(selectedUtilisateur)">
+          🗑️ Supprimer définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

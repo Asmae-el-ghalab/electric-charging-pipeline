@@ -1,0 +1,44 @@
+<div class="container">
+
+  <h2>⚠️ Gestion des Signalements</h2>
+
+  <div *ngIf="loading">Chargement...</div>
+
+  <table *ngIf="!loading" class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Conducteur</th>
+        <th>Borne</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let s of signalements">
+        <td>{{ s.id }}</td>
+        <td>{{ s.conducteurId }}</td>
+        <td>{{ s.borneId }}</td>
+        <td>{{ s.type }}</td>
+        <td>{{ s.description }}</td>
+
+        <td>
+          <span [class]="s.statut">{{ s.statut }}</span>
+        </td>
+
+        <td>{{ s.dateSignalement | date:'short' }}</td>
+
+        <td>
+          <button (click)="updateStatut(s.id, 'EN_COURS')">En cours</button>
+          <button (click)="updateStatut(s.id, 'RESOLU')">Résolu</button>
+          <button (click)="updateStatut(s.id, 'REJETE')">Rejeter</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>

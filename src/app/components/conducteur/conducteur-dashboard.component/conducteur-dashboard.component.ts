@@ -31,8 +31,8 @@ interface Signalement {
   description: string;
   dateSignalement: string | Date;
   statut: 'EN_ATTENTE' | 'EN_COURS' | 'RESOLU' | 'REJETE';
-  conducteur: { id: number };
-  borne: { id: number };
+  conducteurId: number;
+  borneId: number;
 }
 
 @Component({
@@ -376,40 +376,35 @@ export class ConducteurDashboardComponent implements OnInit {
   
   // ========== SIGNALEMENTS ==========
   
-  chargerSignalements(): void {
-    if (!this.conducteurIdNumber) {
-      console.warn('⚠️ ID conducteur invalide pour charger les signalements');
-      this.signalements = [];
-      this.signalementsFiltres = [];
-      this.updateStats();
-      this.cdr.detectChanges();
-      return;
-    }
-    
-    this.loading.signalements = true;
+ chargerSignalements(): void {
+  if (!this.conducteurIdNumber) {
+    console.warn('⚠️ ID conducteur invalide pour charger les signalements');
+    this.signalements = [];
+    this.signalementsFiltres = [];
+    this.updateStats();
     this.cdr.detectChanges();
-    
-    this.http.get<Signalement[]>(`${this.apiUrl}/signalements`).subscribe({
-      next: (data) => {
-        this.signalements = data.filter(s => s.conducteur?.id === this.conducteurIdNumber);
-        this.signalementsFiltres = [...this.signalements];
-        this.updateStats();
-        this.loading.signalements = false;
-        this.cdr.detectChanges();
-        console.log(`✅ ${this.signalements.length} signalements chargés`);
-      },
-      error: (err) => {
-        console.error('❌ Erreur chargement signalements:', err);
-        this.loading.signalements = false;
-        this.signalements = [];
-        this.signalementsFiltres = [];
-        this.updateStats();
-        this.cdr.detectChanges();
-        this.showMessage('❌ Erreur chargement des signalements', 'error');
-      }
-    });
+    return;
   }
-  
+
+  this.loading.signalements = true;
+  this.cdr.detectChanges();
+
+  this.http.get<Signalement[]>(`${this.apiUrl}/signalements`).subscribe({
+  next: (data) => {
+
+    this.signalements = data.filter(
+      s => s.conducteurId === this.conducteurIdNumber
+    );
+
+    this.signalementsFiltres = [...this.signalements];
+    this.updateStats();
+    this.loading.signalements = false;
+    this.cdr.detectChanges();
+
+    console.log(`✅ ${this.signalements.length} signalements chargés`);
+  }
+});
+}
   private updateStats(): void {
     this.statsTotal = this.signalements.length;
     this.statsEnAttente = this.signalements.filter(s => s.statut === 'EN_ATTENTE').length;

@@ -26,11 +26,32 @@ export class AuthInterceptor implements HttpInterceptor {
     // Handle the response
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 || error.status === 403) {
-          // Auto logout if token is invalid or expired
+        // ✅ VÉRIFICATION : Si l'utilisateur est bloqué (403)
+        if (error.status === 403) {
+          console.log('🚫 Accès refusé (403) - Vérification du blocage...');
+          
+          // Vérifier si l'utilisateur est bloqué
+          if (this.authService.isBlocked()) {
+            console.log('🚫 Utilisateur bloqué, déconnexion...');
+            alert('❌ Votre compte a été bloqué par un administrateur.');
+            this.authService.logout();
+            this.router.navigate(['/connexion']);
+            return throwError(() => error);
+          }
+          
+          // Si l'utilisateur n'est pas bloqué mais a un token invalide
           this.authService.logout();
-          this.router.navigate(['/login']);
+          this.router.navigate(['/connexion']);
+          return throwError(() => error);
         }
+        
+        // Si token invalide ou expiré (401)
+        if (error.status === 401) {
+          console.log('🔑 Token invalide ou expiré, déconnexion...');
+          this.authService.logout();
+          this.router.navigate(['/connexion']);
+        }
+        
         return throwError(() => error);
       })
     );

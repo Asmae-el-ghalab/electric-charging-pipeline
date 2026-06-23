@@ -1,181 +1,457 @@
-<!-- src/app/components/admin/admin-dashboard.component.html -->
 <div class="dashboard-container">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <h2>⚡ BorneMaroc</h2>
-      <p>Admin Panel</p>
-    </div>
-    
-    <nav class="nav-menu">
-      <a routerLink="/admin/dashboard" class="nav-item active">
-        <span class="icon">📊</span>
-        <span>Dashboard</span>
-      </a>
-      <a routerLink="/admin/users" class="nav-item">
-        <span class="icon">👥</span>
-        <span>Utilisateurs</span>
-      </a>
-      <a routerLink="/admin/stations" class="nav-item">
-        <span class="icon">🔋</span>
-        <span>Stations</span>
-      </a>
-      <a routerLink="/admin/reservations" class="nav-item">
-        <span class="icon">📅</span>
-        <span>Réservations</span>
-      </a>
-      <a routerLink="/admin/reports" class="nav-item">
-        <span class="icon">📈</span>
-        <span>Rapports</span>
-      </a>
-      <a routerLink="/admin/settings" class="nav-item">
-        <span class="icon">⚙️</span>
-        <span>Paramètres</span>
-      </a>
-    </nav>
-    
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <span class="user-icon">👨‍💼</span>
-        <div>
-          <p class="user-name">{{ adminName }}</p>
-          <p class="user-role">Administrateur</p>
-        </div>
-      </div>
-      <button (click)="logout()" class="logout-btn">
-        <span>🚪</span> Déconnexion
-      </button>
-    </div>
-  </aside>
 
-  <!-- Main Content -->
+  <!-- ================= SIDEBAR ================= -->
+
+ 
+
+  <!-- ================= MAIN ================= -->
+
   <main class="main-content">
-    <!-- Header -->
+
+    <!-- HEADER -->
+
     <header class="header">
-      <h1>Dashboard Administrateur</h1>
-      <div class="header-actions">
-        <span class="date">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+
+      <div>
+
+        <h1>Dashboard Bornes</h1>
+
+        <p>{{ currentDate | date:'dd/MM/yyyy' }}</p>
+
       </div>
+
     </header>
 
-    <!-- Stats Cards -->
+    <!-- ================= STATS ================= -->
+
     <div class="stats-grid">
+
       <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-info">
-          <h3>{{ stats.totalUsers }}</h3>
-          <p>Total Utilisateurs</p>
-        </div>
+
+        <h2>{{ stats.totalBornes }}</h2>
+
+        <span>Total Bornes</span>
+
       </div>
-      
+
       <div class="stat-card">
-        <div class="stat-icon">🚗</div>
-        <div class="stat-info">
-          <h3>{{ stats.totalConducteurs }}</h3>
-          <p>Conducteurs</p>
-        </div>
+
+        <h2>{{ stats.disponibles }}</h2>
+
+        <span>Disponibles</span>
+
       </div>
-      
+
       <div class="stat-card">
-        <div class="stat-icon">👤</div>
-        <div class="stat-info">
-          <h3>{{ stats.totalPassagers }}</h3>
-          <p>Passagers</p>
-        </div>
+
+        <h2>{{ stats.maintenance }}</h2>
+
+        <span>Maintenance</span>
+
       </div>
-      
+
       <div class="stat-card">
-        <div class="stat-icon">🔋</div>
-        <div class="stat-info">
-          <h3>{{ stats.totalStations }}</h3>
-          <p>Stations</p>
-        </div>
+
+        <h2>{{ stats.horsService }}</h2>
+
+        <span>Hors Service</span>
+
       </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">📅</div>
-        <div class="stat-info">
-          <h3>{{ stats.totalReservations }}</h3>
-          <p>Réservations</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-info">
-          <h3>{{ stats.revenusMois }} DH</h3>
-          <p>Revenus du mois</p>
-        </div>
-      </div>
+
     </div>
 
-    <!-- Recent Users -->
+    <!-- ================= TABLE ================= -->
+
     <div class="recent-section">
+
       <div class="section-header">
-        <h2>Utilisateurs Récents</h2>
-        <button class="btn-view-all">Voir tout</button>
+
+        <h2>Gestion des Bornes</h2>
+
+        <button class="btn-add"
+
+                (click)="showForm=true;isEditMode=false">
+
+          ➕ Ajouter une borne
+
+        </button>
+
       </div>
-      
+
+      <!-- FILTRES -->
+
+      <div class="filters">
+
+        <input
+
+          type="text"
+
+          placeholder="🔍 Rechercher..."
+
+          [(ngModel)]="searchText"
+
+          (input)="applyFilters()"
+
+        >
+
+        <select
+
+          [(ngModel)]="selectedCity"
+
+          (change)="applyFilters()">
+
+          <option value="">Toutes les villes</option>
+
+          <option
+
+            *ngFor="let city of cities"
+
+            [value]="city">
+
+            {{city}}
+
+          </option>
+
+        </select>
+
+        <select
+
+          [(ngModel)]="selectedOperator"
+
+          (change)="applyFilters()">
+
+          <option value="">Tous les opérateurs</option>
+
+          <option
+
+            *ngFor="let op of operators"
+
+            [value]="op">
+
+            {{op}}
+
+          </option>
+
+        </select>
+
+      </div>
+
+      <!-- TABLE -->
+
       <table class="data-table">
+
         <thead>
+
           <tr>
+
             <th>ID</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Rôle</th>
-            <th>Date</th>
+
+            <th>Titre</th>
+
+            <th>Ville</th>
+
+            <th>Opérateur</th>
+
+            <th>Status</th>
+
             <th>Actions</th>
+
           </tr>
+
         </thead>
+
         <tbody>
-          <tr *ngFor="let user of recentUsers">
-            <td>{{ user.id }}</td>
-            <td>{{ user.nom }}</td>
-            <td>{{ user.email }}</td>
+
+          <tr *ngFor="let borne of paginatedBornes">
+
+            <td>{{borne.id}}</td>
+
+            <td>{{borne.title}}</td>
+
+            <td>{{borne.city}}</td>
+
+            <td>{{borne.operator}}</td>
+
             <td>
-              <span class="badge" [class.badge-conducteur]="user.role === 'CONDUCTEUR'">
-                {{ user.role }}
+
+              <span class="badge">
+
+                {{borne.status}}
+
               </span>
+
             </td>
-            <td>{{ user.date }}</td>
+
             <td>
-              <button class="btn-edit">✏️</button>
-              <button class="btn-delete">🗑️</button>
-            </td>
+
+  <button
+    class="btn-edit"
+    (click)="editBorne(borne)">
+    ✏
+  </button>
+
+  <button
+    class="btn-delete"
+    (click)="deleteBorne(borne.id)">
+    🗑
+  </button>
+<button
+ class="btn-connections"
+ (click)="openConnections(borne)">
+ 👁️ Détails
+</button>
+</td>
+
           </tr>
+
         </tbody>
+
       </table>
+
+      <!-- PAGINATION -->
+
+      <div class="pagination">
+
+        <button
+
+          class="page-btn"
+
+          (click)="previousPage()"
+
+          [disabled]="currentPage==1">
+
+          ◀
+
+        </button>
+
+        <span>
+
+          Page {{currentPage}} / {{totalPages}}
+
+        </span>
+
+        <button
+
+          class="page-btn"
+
+          (click)="nextPage()"
+
+          [disabled]="currentPage==totalPages">
+
+          ▶
+
+        </button>
+
+      </div>
+
     </div>
 
-    <!-- Recent Reservations -->
-    <div class="recent-section">
-      <div class="section-header">
-        <h2>Réservations Récentes</h2>
-        <button class="btn-view-all">Voir tout</button>
-      </div>
-      
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Utilisateur</th>
-            <th>Station</th>
-            <th>Date</th>
-            <th>Montant</th>
-            <th>Statut</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let reservation of recentReservations">
-            <td>{{ reservation.id }}</td>
-            <td>{{ reservation.user }}</td>
-            <td>{{ reservation.station }}</td>
-            <td>{{ reservation.date }}</td>
-            <td>{{ reservation.montant }} DH</td>
-            <td><span class="badge badge-success">Confirmée</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </main>
+
+</div>
+
+<!-- ================= POPUP ================= -->
+
+<div class="popup"
+
+     *ngIf="showForm">
+
+  <div class="popup-content">
+
+    <h2>
+
+      {{isEditMode ? 'Modifier une borne' : 'Ajouter une borne'}}
+
+    </h2>
+
+    <input
+
+      type="text"
+
+      placeholder="Titre"
+
+      [(ngModel)]="newBorne.title">
+
+    <input
+
+      type="text"
+
+      placeholder="Adresse"
+
+      [(ngModel)]="newBorne.address">
+
+    <input
+
+      type="text"
+
+      placeholder="Ville"
+
+      [(ngModel)]="newBorne.city">
+
+    <input
+
+      type="text"
+
+      placeholder="Province"
+
+      [(ngModel)]="newBorne.province">
+
+    <input
+
+      type="text"
+
+      placeholder="Opérateur"
+
+      [(ngModel)]="newBorne.operator">
+
+    <input
+
+      type="text"
+
+      placeholder="Status"
+
+      [(ngModel)]="newBorne.status">
+
+    <input
+
+      type="text"
+
+      placeholder="Usage Cost"
+
+      [(ngModel)]="newBorne.usageCost">
+
+    <div class="buttons">
+
+      <button
+
+        class="btn-save"
+
+        (click)="saveBorne()">
+
+        {{isEditMode ? 'Mettre à jour' : 'Enregistrer'}}
+
+      </button>
+
+      <button
+
+        class="btn-cancel"
+
+        (click)="resetForm()">
+
+        Annuler
+
+      </button>
+      
+    </div>
+
+  </div>
+
+</div>
+<div
+  class="connections-modal"
+  *ngIf="showConnectionsModal">
+
+ <div class="connections-modal" *ngIf="showConnectionsModal">
+  <div class="connections-content">
+    <h2>🔌 Connexions - {{selectedBorne?.title}}</h2>
+
+    <table class="connections-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Power</th>
+          <th>Voltage</th>
+          <th>Qty</th>
+          <th>Level</th>
+          <th>Actions</th> <!-- Nouvelle colonne -->
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of connections">
+          <td>{{c.connectionType}}</td>
+          <td>{{c.powerKw}} kW</td>
+          <td>{{c.voltage}} V</td>
+          <td>{{c.quantity}}</td>
+          <td>{{c.level}}</td>
+          <td>
+            <button 
+              class="btn-edit-connection"
+              (click)="openEditConnection(c, $event)"
+              title="Modifier">
+              ✏️
+            </button>
+            <button 
+              class="btn-delete-connection"
+              (click)="deleteConnection(c.id, $event)"
+              title="Supprimer">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="btn-cancel" (click)="closeConnectionsModal()">Fermer</button>
+  </div>
+</div>
+<!-- Modal d'édition d'une connexion -->
+<!-- Modal d'édition d'une connexion -->
+<div class="edit-connection-modal" *ngIf="showEditConnectionModal">
+  <div class="edit-connection-content">
+    <h2>✏️ Modifier la connexion</h2>
+    
+    <div class="form-group">
+      <label>Type de connexion</label>
+      <input 
+        [(ngModel)]="editingConnection.connectionType" 
+        type="text"
+        class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Puissance (kW)</label>
+      <input 
+        [(ngModel)]="editingConnection.powerKw" 
+        type="number"
+        class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Quantité</label>
+      <input 
+        [(ngModel)]="editingConnection.quantity" 
+        type="number"
+        class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Voltage (V)</label>
+      <input 
+        [(ngModel)]="editingConnection.voltage" 
+        type="number"
+        class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Niveau</label>
+      <input 
+        [(ngModel)]="editingConnection.level" 
+        type="text"
+        class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Type de courant</label>
+      <input 
+        [(ngModel)]="editingConnection.currentType" 
+        type="text"
+        class="form-control">
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-save" (click)="saveConnection()">💾 Sauvegarder</button>
+      <button class="btn-cancel" (click)="closeEditConnectionModal()">❌ Annuler</button>
+    </div>
+  </div>
+</div>
 </div>
