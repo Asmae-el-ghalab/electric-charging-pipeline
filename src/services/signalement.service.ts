@@ -5,22 +5,14 @@ import { map, catchError, tap } from 'rxjs/operators';
 
 export interface Signalement {
   id: number;
-  type: 'PANNE' | 'PROBLEME_FACTURATION' | 'AUTRE';
+  type: string;
   description: string;
-  dateSignalement: string | Date;
-  statut: 'EN_ATTENTE' | 'EN_COURS' | 'RESOLU' | 'REJETE';
-  conducteur: {
-    id: number;
-    nom?: string;
-    prenom?: string;
-  };
-  borne: {
-    id: number;
-    title?: string;
-    address?: string;
-  };
-}
+  dateSignalement: string;
+  statut: string;
 
+  conducteurId: number;
+  borneId: number;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -33,16 +25,13 @@ export class SignalementService {
    * Récupérer tous les signalements
    * Puis filtrer par conducteur côté frontend
    */
-  getSignalementsByConducteur(conducteurId: number): Observable<Signalement[]> {
-    return this.http.get<Signalement[]>(this.apiUrl).pipe(
-      map(signalements => signalements.filter(s => s.conducteur.id === conducteurId)), // ✅ Correction ici
-      tap(signalements => console.log(`📋 ${signalements.length} signalements chargés pour le conducteur ${conducteurId}`)),
-      catchError(error => {
-        console.error('❌ Erreur chargement signalements:', error);
-        return of([]);
-      })
-    );
-  }
+ getSignalementsByConducteur(conducteurId: number): Observable<Signalement[]> {
+  return this.http.get<Signalement[]>(this.apiUrl).pipe(
+    map(signalements =>
+      signalements.filter(s => s.conducteurId === conducteurId)
+    )
+  );
+}
   
   /**
    * Créer un nouveau signalement

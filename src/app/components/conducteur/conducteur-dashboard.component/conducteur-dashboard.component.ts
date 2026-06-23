@@ -25,7 +25,7 @@ interface Conducteur {
   type_utilisateur: string;
 }
 
-// ✅ Interface Signalement corrigée
+// ✅ Interface Signalement corrigée avec propriétés supplémentaires
 interface Signalement {
   id: number;
   type: 'PANNE' | 'VANDALISME' | 'INDISPONIBLE' | 'AUTRE';
@@ -34,9 +34,9 @@ interface Signalement {
   statut: 'EN_ATTENTE' | 'EN_COURS' | 'RESOLU' | 'REJETE';
   conducteur: { id: number };
   borne: { id: number };
-  // ✅ Propriétés optionnelles pour la compatibilité avec le backend
-  conducteurId?: number;
+  // Propriétés optionnelles pour la compatibilité
   borneId?: number;
+  conducteurId?: number;
 }
 
 @Component({
@@ -380,7 +380,7 @@ export class ConducteurDashboardComponent implements OnInit {
   
   // ========== SIGNALEMENTS ==========
   
-  // ✅ Méthode de normalisation ajoutée
+  // ✅ Méthode de normalisation corrigée
   private normaliserSignalement(data: any): Signalement {
     return {
       id: data.id,
@@ -388,13 +388,11 @@ export class ConducteurDashboardComponent implements OnInit {
       description: data.description,
       dateSignalement: data.dateSignalement,
       statut: data.statut,
-      // Créer l'objet conducteur à partir de conducteurId
       conducteur: { id: data.conducteurId || data.conducteur?.id || 0 },
-      // Créer l'objet borne à partir de borneId
       borne: { id: data.borneId || data.borne?.id || 0 },
-      // Conserver les propriétés brutes pour l'affichage
-      conducteurId: data.conducteurId || data.conducteur?.id || 0,
-      borneId: data.borneId || data.borne?.id || 0
+      // Propriétés optionnelles pour compatibilité
+      borneId: data.borneId || data.borne?.id || 0,
+      conducteurId: data.conducteurId || data.conducteur?.id || 0
     };
   }
   
@@ -411,23 +409,14 @@ export class ConducteurDashboardComponent implements OnInit {
     this.loading.signalements = true;
     this.cdr.detectChanges();
     
-    // ✅ Utiliser 'any[]' pour accepter les données brutes
-    this.http.get<any[]>(`${this.apiUrl}/signalements`).subscribe({
+    this.http.get<Signalement[]>(`${this.apiUrl}/signalements`).subscribe({
       next: (data) => {
-        console.log('📥 Données brutes reçues:', data);
-        
-        // ✅ Filtrer sur conducteurId (propriété directe)
-        this.signalements = data
-          .filter(s => s.conducteurId === this.conducteurIdNumber)
-          .map(s => this.normaliserSignalement(s));
-        
+        this.signalements = data.filter(s => s.conducteur?.id === this.conducteurIdNumber);
         this.signalementsFiltres = [...this.signalements];
         this.updateStats();
         this.loading.signalements = false;
         this.cdr.detectChanges();
-        
         console.log(`✅ ${this.signalements.length} signalements chargés`);
-        console.log('📋 Signalements filtrés:', this.signalements);
       },
       error: (err) => {
         console.error('❌ Erreur chargement signalements:', err);
@@ -554,7 +543,7 @@ export class ConducteurDashboardComponent implements OnInit {
   voirDetailsSignalement(signalement: Signalement): void {
     // ✅ S'assurer que borneId est disponible
     if (!signalement.borneId && signalement.borne?.id) {
-      signalement.borneId = signalement.borne.id;
+      (signalement as any).borneId = signalement.borne.id;
     }
     this.signalementSelectionne = signalement;
     this.showModalDetails = true;

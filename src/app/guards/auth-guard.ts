@@ -13,11 +13,23 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
-    if (this.authService.isLoggedIn()) {
-      return true;
+    // Vérifier si l'utilisateur est connecté
+    if (!this.authService.isLoggedIn()) {
+      console.log('🚫 Utilisateur non connecté, redirection vers connexion');
+      this.router.navigate(['/connexion']);
+      return false;
     }
-    
-    this.router.navigate(['/connexion']);
-    return false;
+
+    // ✅ VÉRIFICATION : Si l'utilisateur est bloqué
+    if (this.authService.isBlocked()) {
+      console.log('🚫 Utilisateur bloqué, accès refusé');
+      alert('❌ Votre compte a été bloqué par un administrateur.');
+      this.authService.logout();
+      this.router.navigate(['/connexion']);
+      return false;
+    }
+
+    console.log('✅ Accès autorisé pour:', this.authService.getUserName());
+    return true;
   }
 }

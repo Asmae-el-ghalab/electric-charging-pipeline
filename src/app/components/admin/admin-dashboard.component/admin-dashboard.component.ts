@@ -1,80 +1,379 @@
-// src/app/components/admin/admin-dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
+import { BorneService } from '../../../../services/borne.service';
+import { Borne } from '../../../models/borne.model';
+import { FormsModule } from '@angular/forms';
+import { Connection } from '../../../models/connection.model';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css'],
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, FormsModule]
 })
 export class AdminDashboardComponent implements OnInit {
+
   adminName: string = '';
-    currentDate: Date = new Date(); 
+  selectedCity: string = '';
+  selectedStatus: string = '';
+  selectedOperator: string = '';
+  currentDate: Date = new Date();
+
+  // 🔥 STATS RÉELLES (calculées)
   stats = {
-    totalUsers: 0,
-    totalConducteurs: 0,
-    totalPassagers: 0,
-    totalStations: 0,
-    totalReservations: 0,
-    revenusMois: 0
+    totalBornes: 0,
+    disponibles: 0,
+    maintenance: 0,
+    horsService: 0
   };
 
-  recentUsers: any[] = [];
-  recentReservations: any[] = [];
+  // 🔥 LISTE RÉELLE
+  bornes: Borne[] = [];
+  filteredBornes: Borne[] = [];
+
+  searchText: string = '';
+
+  cities: string[] = [];
+
+  operators: string[] = [];
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 8;
+  totalPages = 1;
+  paginatedBornes: Borne[] = [];
+
+  // Connexions
+  selectedBorne: Borne | null = null;
+  connections: Connection[] = [];
+  showConnectionsModal = false;
+  showEditConnectionModal = false;
+  editingConnection: any = {
+    id: 0,
+    connectionType: '',
+    powerKw: 0,
+    quantity: 0,
+    voltage: 0,
+    level: '',
+    currentType: ''
+  };
+
+  // Formulaire Borne
+  showForm = false;
+  isEditMode = false;
+  newBorne: Borne = {
+    id: 0,
+    uuid: '',
+    title: '',
+    address: '',
+    city: '',
+    province: '',
+    postcode: '',
+    latitude: 0,
+    longitude: 0,
+    operator: '',
+    operatorWebsite: '',
+    status: 'Operational',
+    isOperational: true,
+    usageCost: ''
+  };
 
   constructor(
     private authService: AuthService,
+    private borneService: BorneService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.checkAdminAccess();
     this.adminName = this.authService.getUserName();
-    this.loadStats();
-    this.loadRecentUsers();
-    this.loadRecentReservations();
+    this.loadBornes();
   }
 
   checkAdminAccess(): void {
     if (!this.authService.isLoggedIn() || !this.authService.isAdmin()) {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/connexion']);
     }
   }
 
-  loadStats(): void {
-    // Appeler votre API pour charger les statistiques
-    this.stats = {
-      totalUsers: 150,
-      totalConducteurs: 45,
-      totalPassagers: 105,
-      totalStations: 12,
-      totalReservations: 342,
-      revenusMois: 12500
+  // ==================== CHARGEMENT ====================
+  loadBornes(): void {
+    this.borneService.getBornes(0, 100).subscribe({
+      next: (res) => {
+        this.bornes = res.content;
+        this.filteredBornes = [...this.bornes];
+        this.currentPage = 1;
+        this.updatePagination();
+        this.cities = [...new Set(
+          this.bornes
+            .map(b => b.city)
+            .filter(city => city)
+        )];
+        this.operators = [...new Set(
+          this.bornes
+            .map(b => b.operator)
+            .filter(op => op)
+        )];
+        this.calculateStats();
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+
+  // ==================== STATISTIQUES ====================
+  calculateStats(): void {
+    this.stats.totalBornes = this.bornes.length;
+    this.stats.disponibles = this.bornes.filter(
+      b => b.status?.toLowerCase() === 'operational'
+    ).length;
+    this.stats.maintenance = this.bornes.filter(
+      b => b.status?.toLowerCase() === 'maintenance'
+    ).length;
+    this.stats.horsService = this.bornes.filter(
+      b => b.status?.toLowerCase() === 'out_of_service'
+    ).length;
+  }
+
+  // ==================== PAGINATION ====================
+  updatePagination(): void {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedBornes = this.filteredBornes.slice(start, end);
+    this.totalPages = Math.ceil(this.filteredBornes.length / this.pageSize);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagination();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagination();
+    }
+  }
+
+  // ==================== FILTRES ====================
+  applyFilters(): void {
+    this.filteredBornes = this.bornes.filter(borne => {
+      const matchSearch =
+        !this.searchText ||
+        borne.title.toLowerCase().includes(this.searchText.toLowerCase());
+
+      const matchCity =
+        !this.selectedCity ||
+        borne.city === this.selectedCity;
+
+      const matchOperator =
+        !this.selectedOperator ||
+        borne.operator === this.selectedOperator;
+
+      return matchSearch && matchCity && matchOperator;
+    });
+
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  filterBornes(): void {
+    this.borneService.filterBornes(
+      this.selectedStatus,
+      this.selectedCity,
+      this.selectedOperator
+    ).subscribe({
+      next: (data) => {
+        this.bornes = data;
+        this.calculateStats();
+        this.applyFilters();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  // ==================== CRUD BORNES ====================
+  deleteBorne(id: number): void {
+    if (!confirm('Supprimer cette borne ?')) return;
+
+    this.borneService.deleteBorne(id).subscribe({
+      next: () => {
+        this.bornes = this.bornes.filter(b => b.id !== id);
+        this.calculateStats();
+        this.filteredBornes = [...this.bornes];
+        this.updatePagination();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  editBorne(borne: Borne): void {
+    this.newBorne = { ...borne };
+    this.showForm = true;
+    this.isEditMode = true;
+  }
+
+  resetForm(): void {
+    this.showForm = false;
+    this.isEditMode = false;
+    this.newBorne = {
+      id: 0,
+      uuid: '',
+      title: '',
+      address: '',
+      city: '',
+      province: '',
+      postcode: '',
+      latitude: 0,
+      longitude: 0,
+      operator: '',
+      operatorWebsite: '',
+      status: 'Operational',
+      isOperational: true,
+      usageCost: ''
     };
   }
 
-  loadRecentUsers(): void {
-    // Appeler votre API pour les utilisateurs récents
-    this.recentUsers = [
-      { id: 1, nom: 'Jean Dupont', email: 'jean@email.com', role: 'CONDUCTEUR', date: '2024-01-15' },
-      { id: 2, nom: 'Marie Curie', email: 'marie@email.com', role: 'PASSAGER', date: '2024-01-14' },
-      { id: 3, nom: 'Paul Martin', email: 'paul@email.com', role: 'CONDUCTEUR', date: '2024-01-13' }
-    ];
+  saveBorne(): void {
+    if (this.isEditMode) {
+      // 🔥 UPDATE
+      this.borneService.updateBorne(this.newBorne.id, this.newBorne)
+        .subscribe({
+          next: () => {
+            this.loadBornes();
+            this.resetForm();
+          },
+          error: (err) => console.error(err)
+        });
+    } else {
+      // 🔥 CREATE
+      this.borneService.addBorne(this.newBorne)
+        .subscribe({
+          next: () => {
+            this.loadBornes();
+            this.resetForm();
+          },
+          error: (err) => console.error(err)
+        });
+    }
   }
 
-  loadRecentReservations(): void {
-    // Appeler votre API pour les réservations récentes
-    this.recentReservations = [
-      { id: 1, user: 'Jean Dupont', station: 'Station Centre', date: '2024-01-15', montant: 45.00 },
-      { id: 2, user: 'Marie Curie', station: 'Station Nord', date: '2024-01-14', montant: 32.50 }
-    ];
+  // ==================== CONNEXIONS ====================
+  openConnections(borne: Borne): void {
+    this.selectedBorne = borne;
+
+    this.borneService.getConnectionsByBorne(borne.id)
+      .subscribe({
+        next: (data) => {
+          this.connections = data;
+          this.showConnectionsModal = true;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
   }
 
+  closeConnectionsModal(): void {
+    this.showConnectionsModal = false;
+    this.connections = [];
+    this.selectedBorne = null;
+  }
+
+  // Ouvrir le formulaire d'édition
+  openEditConnection(connection: Connection, event: Event): void {
+    event.stopPropagation();
+    this.editingConnection = {
+      id: connection.id || 0,
+      connectionType: connection.connectionType || '',
+      powerKw: connection.powerKw || 0,
+      quantity: connection.quantity || 0,
+      voltage: connection.voltage || 0,
+      amps: connection.amps || 0,
+      level: connection.level || '',
+      currentType: connection.currentType || ''
+    };
+    this.showEditConnectionModal = true;
+  }
+
+  // Fermer le formulaire d'édition
+  closeEditConnectionModal(): void {
+    this.showEditConnectionModal = false;
+    this.editingConnection = {
+      id: 0,
+      connectionType: '',
+      powerKw: 0,
+      quantity: 0,
+      voltage: 0,
+      level: '',
+      currentType: ''
+    };
+  }
+
+  // Sauvegarder les modifications
+  saveConnection(): void {
+    if (this.editingConnection && this.editingConnection.id) {
+      this.borneService.updateConnection(this.editingConnection.id, this.editingConnection)
+        .subscribe({
+          next: (updated) => {
+            // Recharger la liste des connexions
+            if (this.selectedBorne) {
+              this.borneService.getConnectionsByBorne(this.selectedBorne.id)
+                .subscribe({
+                  next: (data) => {
+                    this.connections = data;
+                    this.closeEditConnectionModal();
+                    alert('✅ Connexion modifiée avec succès !');
+                  },
+                  error: (err) => console.error('Erreur rechargement', err)
+                });
+            }
+          },
+          error: (err) => {
+            console.error('Erreur modification', err);
+            alert('❌ Erreur lors de la modification');
+          }
+        });
+    }
+  }
+
+  // Supprimer une connexion
+  deleteConnection(connectionId: number, event: Event): void {
+    event.stopPropagation();
+
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette connexion ?')) {
+      this.borneService.deleteConnection(connectionId)
+        .subscribe({
+          next: () => {
+            // Recharger la liste
+            if (this.selectedBorne) {
+              this.borneService.getConnectionsByBorne(this.selectedBorne.id)
+                .subscribe({
+                  next: (data) => {
+                    this.connections = data;
+                    alert('✅ Connexion supprimée avec succès !');
+                  },
+                  error: (err) => console.error('Erreur rechargement', err)
+                });
+            }
+          },
+          error: (err) => {
+            console.error('Erreur suppression', err);
+            alert('❌ Erreur lors de la suppression');
+          }
+        });
+    }
+  }
+
+  // ==================== LOGOUT ====================
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/connexion']);
   }
 }

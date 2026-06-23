@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 import { NavbarComponent } from '../../components/navbar/navbarComponent';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -34,10 +35,17 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Vérifier si déjà connecté
-    if (this.authService.isLoggedIn()) {
+    // Vérifier si déjà connecté et non bloqué
+    if (this.authService.isLoggedIn() && !this.authService.isBlocked()) {
       console.log('🔐 Utilisateur déjà connecté, redirection...');
       this.redirectBasedOnRole();
+    }
+    
+    // ✅ Si l'utilisateur est bloqué mais connecté, le déconnecter
+    if (this.authService.isLoggedIn() && this.authService.isBlocked()) {
+      console.log('🚫 Utilisateur bloqué, déconnexion...');
+      this.authService.logout();
+      this.errorMessage = '❌ Votre compte a été bloqué par un administrateur.';
     }
   }
 
@@ -73,6 +81,14 @@ export class LoginComponent implements OnInit {
           return;
         }
         
+        // ✅ VÉRIFICATION : Si l'utilisateur est bloqué
+        if (response.estBloque === true) {
+          console.log('🚫 Utilisateur bloqué !');
+          this.errorMessage = '❌ Votre compte est bloqué. Veuillez contacter l\'administrateur.';
+          this.isLoading = false;
+          return;
+        }
+        
         // Vérifier que le token est présent
         if (!response.token) {
           this.errorMessage = 'Réponse invalide du serveur';
@@ -91,16 +107,19 @@ export class LoginComponent implements OnInit {
         console.error('❌ Erreur HTTP:', error);
         this.isLoading = false;
         
-        if (error.error?.error) {
+        // ✅ VÉRIFICATION : Erreur 403 = compte bloqué
+        if (error.status === 403) {
+          this.errorMessage = '❌ Votre compte est bloqué. Veuillez contacter l\'administrateur.';
+        } else if (error.error?.error) {
           this.errorMessage = error.error.error;
         } else if (error.status === 401) {
-          this.errorMessage = 'Email ou mot de passe incorrect';
+          this.errorMessage = '❌ Email ou mot de passe incorrect';
         } else if (error.status === 500) {
-          this.errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+          this.errorMessage = '❌ Erreur serveur. Veuillez réessayer plus tard.';
         } else if (error.error?.message) {
           this.errorMessage = error.error.message;
         } else {
-          this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+          this.errorMessage = '❌ Une erreur est survenue. Veuillez réessayer.';
         }
       }
     });
@@ -111,6 +130,15 @@ export class LoginComponent implements OnInit {
     const role = this.authService.getUserRole();
     const userName = this.authService.getUserName();
     
+    // ✅ VÉRIFICATION : Si l'utilisateur est bloqué
+    if (this.authService.isBlocked()) {
+      console.log('🚫 Utilisateur bloqué, redirection vers login');
+      this.errorMessage = '❌ Votre compte est bloqué. Veuillez contacter l\'administrateur.';
+      this.authService.logout();
+      this.router.navigate(['/connexion']);
+      return;
+    }
+    
     console.log('🔍 Redirection - Informations:', {
       'Token présent': !!token,
       'Rôle': role,
@@ -120,7 +148,7 @@ export class LoginComponent implements OnInit {
     
     if (!token) {
       console.error('❌ Pas de token trouvé, redirection vers login');
-      this.router.navigate(['/login']);
+      this.router.navigate(['/connexion']);
       return;
     }
     
