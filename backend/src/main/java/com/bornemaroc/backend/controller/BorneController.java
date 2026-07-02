@@ -337,11 +337,12 @@ public class BorneController {
      * Ajoute une nouvelle borne
      * POST http://localhost:8081/api/bornes
      */
-    @PostMapping
-    public ResponseEntity<Borne> addBorne(@RequestBody Borne borne) {
-        return ResponseEntity.ok(borneService.addBorne(borne));
-    }
-
+     @PostMapping
+public ResponseEntity<Borne> addBorne(@RequestBody Borne borne) {
+    borne.setId(null);
+    Borne saved = borneService.addBorne(borne);
+    return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+}
     /**
      * Met à jour le statut d'une borne
      * PUT http://localhost:8081/api/bornes/{id}/status?status=Operational

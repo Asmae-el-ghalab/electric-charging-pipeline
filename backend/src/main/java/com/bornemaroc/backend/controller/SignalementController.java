@@ -128,5 +128,34 @@ public class SignalementController {
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
-    }
+    } 
+    @GetMapping("/stats")
+public ResponseEntity<Map<String, Object>> getStats() {
+
+    List<Signalement> list = signalementService.getAllSignalements();
+
+    long total = list.size();
+
+    long attente = list.stream()
+            .filter(s -> "EN_ATTENTE".equalsIgnoreCase(s.getStatut()))
+            .count();
+
+    long traite = list.stream()
+            .filter(s -> "TRAITE".equalsIgnoreCase(s.getStatut()))
+            .count();
+
+    long refuse = list.stream()
+            .filter(s -> "REFUSE".equalsIgnoreCase(s.getStatut()))
+            .count();
+
+    Map<String, Object> stats = new HashMap<>();
+
+    stats.put("total", total);
+    stats.put("attente", attente);
+    stats.put("traite", traite);
+    stats.put("refuse", refuse);
+
+    return ResponseEntity.ok(stats);
+
+}
 }

@@ -13,8 +13,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Borne {
 
     @Id
-    private Long id;
-
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id")
+private Long id;
     private String uuid;
     private String title;
     private String address;

@@ -3,7 +3,7 @@ package com.bornemaroc.backend.entity;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+     @Entity
 @Table(name = "signalement")
 public class Signalement {
 
@@ -13,16 +13,19 @@ public class Signalement {
 
     @Column(name = "conducteur_id")
     private Long conducteurId;
-    
+
     @Column(name = "borne_id")
     private Long borneId;
-    
+
+    @Column(name = "type", length = 50, nullable = false)
     private String type;
-    
+
+    @Column(name = "description", length = 1000)
     private String description;
-    
+
+    @Column(name = "statut", length = 30, nullable = false)
     private String statut;
-    
+
     @Column(name = "date_signalement")
     private LocalDateTime dateSignalement;
     
