@@ -155,7 +155,8 @@ export class LoginComponent implements OnInit {
     // Rediriger selon le rôle
     if (this.authService.isAdmin()) {
       console.log('👑 Redirection vers Dashboard Admin');
-      this.router.navigate(['/admin/dashboard']);
+      // login.component.ts
+      this.router.navigate(['/admin']);
     } else if (this.authService.isConducteur()) {
       console.log('🚗 Redirection vers Dashboard Conducteur');
       this.router.navigate(['/conducteur/dashboard']);

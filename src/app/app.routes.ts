@@ -21,24 +21,38 @@ export const routes: Routes = [
   { 
     path: 'admin', 
     loadComponent: () => import('./components/admin/admin-layout.component/admin-layout.component').then(m => m.AdminLayoutComponent),
-    children: [
-      {
-      path: '',
-      loadComponent: () =>
-        import('./components/admin/admin-statistics.component/admin-statistics.component')
-          .then(m => m.AdminStatisticsComponent)
-    },
-      { path: 'dashboard', loadComponent: () => import('./components/admin/admin-dashboard.component/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
-      { path: 'utilisateurs', loadComponent: () => import('./components/admin/admin-utilisateurs.component/admin-utilisateurs.component').then(m => m.AdminUtilisateursComponent) },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      {
-  path: 'signalements',
-  loadComponent: () =>
-    import('./components/admin/admin-signalements.component/admin-signalements.component')
-      .then(m => m.AdminSignalementsComponent)
-}
+   children: [
 
-    ]
+  // ✅ Page d'accueil Admin
+  {
+    path: '',
+    loadComponent: () =>
+      import('./components/admin/admin-statistics.component/admin-statistics.component')
+        .then(m => m.AdminStatisticsComponent)
+  },
+
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./components/admin/admin-dashboard.component/admin-dashboard.component')
+        .then(m => m.AdminDashboardComponent)
+  },
+
+  {
+    path: 'utilisateurs',
+    loadComponent: () =>
+      import('./components/admin/admin-utilisateurs.component/admin-utilisateurs.component')
+        .then(m => m.AdminUtilisateursComponent)
+  },
+
+  {
+    path: 'signalements',
+    loadComponent: () =>
+      import('./components/admin/admin-signalements.component/admin-signalements.component')
+        .then(m => m.AdminSignalementsComponent)
+  }
+
+]
   },
   { path: 'carte', loadComponent: () => import('./pages/map/mapComponent').then(m => m.MapComponent) },
     { 

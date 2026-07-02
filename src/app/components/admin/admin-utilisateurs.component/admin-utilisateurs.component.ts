@@ -71,21 +71,16 @@ export class AdminUtilisateursComponent implements OnInit {
 
       const matchesRole = this.filterRole === 'Tous les rôles' ||
         user.role === this.filterRole;
+      const matchesStatus =
+     this.filterStatus === 'Tous les statuts' ||
+    (this.filterStatus === 'Actif' && !user.estBloque) ||
+   (this.filterStatus === 'Bloqué' && user.estBloque);
 
-      const matchesStatus = this.filterStatus === 'Tous les statuts' ||
-        (this.filterStatus === 'Actif' && !user.estBloque) ||
-        (this.filterStatus === 'Bloqué' && user.estBloque) ||
-        (this.filterStatus === 'Inactif' && this.isInactif(user));
-
-      return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole && matchesStatus;
     });
   }
 
-  isInactif(user: Utilisateur): boolean {
-    const lastConnexion = new Date(user.derniereConnexion);
-    const daysSince = (Date.now() - lastConnexion.getTime()) / (1000 * 60 * 60 * 24);
-    return daysSince > 30 && !user.estBloque;
-  }
+ 
 
   onSearch(event: Event): void {
     this.searchTerm = (event.target as HTMLInputElement).value;
@@ -263,25 +258,20 @@ export class AdminUtilisateursComponent implements OnInit {
     };
     return labels[role] || role;
   }
+getStatusClass(user: Utilisateur): string {
+  return user.estBloque ? 's-blocked' : 's-active';
+}
 
-  getStatusClass(user: Utilisateur): string {
-    if (user.estBloque) return 's-blocked';
-    if (this.isInactif(user)) return 's-inactive';
-    return 's-active';
-  }
+getStatusLabel(user: Utilisateur): string {
+  return user.estBloque ? 'Bloqué' : 'Actif';
+}
 
-  getStatusLabel(user: Utilisateur): string {
-    if (user.estBloque) return 'Bloqué';
-    if (this.isInactif(user)) return 'Inactif';
-    return 'Actif';
-  }
+getStatusIcon(user: Utilisateur): string {
+  return user.estBloque ? '🔒' : '🟢';
+}
+  
 
-  getStatusIcon(user: Utilisateur): string {
-    if (user.estBloque) return '🔒';
-    if (this.isInactif(user)) return '💤';
-    return '🟢';
-  }
-
+ 
   getInitials(nom: string): string {
     return nom.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   }

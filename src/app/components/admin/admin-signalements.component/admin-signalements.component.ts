@@ -54,5 +54,46 @@ export class AdminSignalementsComponent implements OnInit {
         next: () => this.loadSignalements(),
         error: (err) => console.error(err)
       });
+  } 
+  get enAttente(): Signalement[] {
+  return this.signalements.filter(s => s.statut === 'EN_ATTENTE');
+}
+
+get enCours(): Signalement[] {
+  return this.signalements.filter(s => s.statut === 'EN_COURS');
+}
+
+get resolus(): Signalement[] {
+  return this.signalements.filter(s => s.statut === 'RESOLU');
+}
+
+get rejetes(): Signalement[] {
+  return this.signalements.filter(s => s.statut === 'REJETE');
+}
+
+getStatutLabel(statut: string): string {
+  switch (statut) {
+    case 'EN_ATTENTE':
+      return 'En attente';
+    case 'EN_COURS':
+      return 'En cours';
+    case 'RESOLU':
+      return 'Résolu';
+    case 'REJETE':
+      return 'Rejeté';
+    default:
+      return statut;
   }
+}
+
+getTypeIcon(type: string): string {
+  const value = type?.toLowerCase() || '';
+
+  if (value.includes('hors') || value.includes('service')) return '🔌';
+  if (value.includes('adresse') || value.includes('localisation')) return '📍';
+  if (value.includes('prise')) return '⚡';
+  if (value.includes('prix')) return '💰';
+
+  return '⚠️';
+}
 }

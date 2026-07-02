@@ -1,23 +1,234 @@
-<div class="stats-container">
+<div class="dashboard">
 
-  <h2>📊 Statistiques Admin</h2>
+  <!-- HEADER -->
+ <div class="dashboard-header">
+
+    <h1>📊 Tableau de bord Administrateur</h1>
+
+    <p>
+        Bienvenue dans l'espace d'administration de
+        <strong>ChargeFlow</strong>
+    </p>
+
+</div>
+
+  <!-- =======================
+          CARDS
+  ======================== -->
 
   <div class="cards">
 
     <div class="card users">
-      <h3>👤 Utilisateurs</h3>
-      <p>{{ totalUsers }}</p>
-    </div>
+      <div class="icon">👥</div>
 
-    <div class="card signalements">
-      <h3>⚠️ Signalements</h3>
-      <p>{{ totalSignalements }}</p>
+      <div class="info">
+        <h2>{{ totalUsers }}</h2>
+        <span>Utilisateurs</span>
+
+        <small>
+          {{ admins }} Admin(s) •
+          {{ conducteurs }} Conducteur(s)
+        </small>
+      </div>
     </div>
 
     <div class="card bornes">
-      <h3>🔌 Bornes</h3>
-      <p>{{ totalBornes }}</p>
+
+      <div class="icon">
+        🔌
+      </div>
+
+      <div class="info">
+        <h2>{{ totalBornes }}</h2>
+        <span>Bornes</span>
+
+        <small>
+
+          {{ totalDisponibles }}
+
+          disponibles
+
+        </small>
+
+      </div>
+
     </div>
+
+    <div class="card signalements">
+
+      <div class="icon">
+        ⚠️
+      </div>
+
+      <div class="info">
+
+        <h2>{{ totalSignalements }}</h2>
+
+        <span>Signalements</span>
+
+        <small>
+
+          {{ enAttente }}
+
+          en attente
+
+        </small>
+
+      </div>
+
+    </div>
+
+    <div class="card disponible">
+
+      <div class="icon">
+        🟢
+      </div>
+
+      <div class="info">
+
+        <h2>{{ totalDisponibles }}</h2>
+
+        <span>Disponibles</span>
+
+        <small>
+
+          {{ occupied }}
+
+          occupées
+
+        </small>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- =======================
+        GRAPHIQUES
+  ======================== -->
+
+  <div class="charts">
+
+    <div class="chart-card">
+
+      <h3>Signalements</h3>
+
+     <canvas #signalementChart></canvas>
+
+    </div>
+
+    <div class="chart-card">
+
+      <h3>Répartition des bornes</h3>
+
+    <canvas #bornesChart></canvas>
+
+    </div>
+
+  </div>
+
+  <!-- =======================
+      DERNIERS UTILISATEURS
+  ======================== -->
+
+  <div class="table-card">
+
+    <h3>👥 Derniers utilisateurs</h3>
+
+    <table>
+
+      <thead>
+
+      <tr>
+
+        <th>Nom</th>
+
+        <th>Email</th>
+
+        <th>Rôle</th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+      <tr *ngFor="let user of derniersUtilisateurs">
+
+        <td>{{ user.nom }}</td>
+
+        <td>{{ user.email }}</td>
+
+        <td>
+
+          <span class="badge">
+
+            {{ user.role }}
+
+          </span>
+
+        </td>
+
+      </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <!-- =======================
+      DERNIERS SIGNALEMENTS
+  ======================== -->
+
+  <div class="table-card">
+
+    <h3>⚠️ Derniers signalements</h3>
+
+    <table>
+
+      <thead>
+
+      <tr>
+
+        <th>Type</th>
+
+        <th>Statut</th>
+
+        <th>Date</th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+      <tr *ngFor="let s of derniersSignalements">
+
+        <td>{{ s.type }}</td>
+
+        <td>
+
+          <span class="badge">
+
+            {{ s.statut }}
+
+          </span>
+
+        </td>
+
+        <td>
+
+          {{ s.dateSignalement | date:'dd/MM/yyyy HH:mm' }}
+
+        </td>
+
+      </tr>
+
+      </tbody>
+
+    </table>
 
   </div>
 

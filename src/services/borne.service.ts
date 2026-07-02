@@ -31,12 +31,9 @@ export class BorneService {
   }
 
   // Ajouter
-  addBorne(borne: Borne): Observable<Borne> {
-    return this.http.post<Borne>(
-      this.apiUrl,
-      borne
-    );
-  }
+  addBorne(borne: Borne) {
+  return this.http.post<Borne>('http://localhost:8081/api/bornes', borne);
+}
 
   // Modifier uniquement le statut
   updateStatus(id: number, status: string): Observable<Borne> {

@@ -69,8 +69,7 @@
         <h2>Gestion des Bornes</h2>
 
         <button class="btn-add"
-
-                (click)="showForm=true;isEditMode=false">
+        (click)="openAddForm()">
 
           ➕ Ajouter une borne
 
@@ -144,18 +143,13 @@
 
           <tr>
 
-            <th>ID</th>
-
-            <th>Titre</th>
-
-            <th>Ville</th>
-
-            <th>Opérateur</th>
-
-            <th>Status</th>
-
-            <th>Actions</th>
-
+           <th>ID</th>
+<th>Titre</th>
+<th>Ville</th>
+<th>Opérateur</th>
+<th>Usage Cost</th>
+<th>Status</th>
+<th>Actions</th>
           </tr>
 
         </thead>
@@ -170,17 +164,17 @@
 
             <td>{{borne.city}}</td>
 
-            <td>{{borne.operator}}</td>
+            
 
-            <td>
+           <td>{{borne.operator}}</td>
 
-              <span class="badge">
+<td>{{ borne.usageCost || '-' }}</td>
 
-                {{borne.status}}
-
-              </span>
-
-            </td>
+<td>
+  <span class="badge">
+    {{borne.status}}
+  </span>
+</td>
 
             <td>
 

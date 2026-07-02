@@ -1,44 +1,133 @@
-<div class="container">
+<div class="signalements-page">
+  <div class="signalements-header">
+    <div>
+      <h2>⚠️ Gestion des signalements</h2>
+      <p>Traitement des problèmes signalés par les conducteurs</p>
+    </div>
 
-  <h2>⚠️ Gestion des Signalements</h2>
+    <button class="btn-refresh" (click)="loadSignalements()">
+      🔄 Actualiser
+    </button>
+  </div>
 
-  <div *ngIf="loading">Chargement...</div>
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des signalements...</p>
+  </div>
 
-  <table *ngIf="!loading" class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Conducteur</th>
-        <th>Borne</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Statut</th>
-        <th>Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+  <div class="kanban" *ngIf="!loading">
+    <section class="kanban-column attente">
+      <div class="column-header">
+        <span>⏳ En attente</span>
+        <strong>{{ enAttente.length }}</strong>
+      </div>
 
-    <tbody>
-      <tr *ngFor="let s of signalements">
-        <td>{{ s.id }}</td>
-        <td>{{ s.conducteurId }}</td>
-        <td>{{ s.borneId }}</td>
-        <td>{{ s.type }}</td>
-        <td>{{ s.description }}</td>
+      <div class="column-body">
+        <ng-container *ngFor="let s of enAttente">
+          <ng-container *ngTemplateOutlet="signalementCard; context: { $implicit: s }"></ng-container>
+        </ng-container>
 
-        <td>
-          <span [class]="s.statut">{{ s.statut }}</span>
-        </td>
+        <p class="empty-column" *ngIf="enAttente.length === 0">Aucun signalement</p>
+      </div>
+    </section>
 
-        <td>{{ s.dateSignalement | date:'short' }}</td>
+    <section class="kanban-column cours">
+      <div class="column-header">
+        <span>🔧 En cours</span>
+        <strong>{{ enCours.length }}</strong>
+      </div>
 
-        <td>
-          <button (click)="updateStatut(s.id, 'EN_COURS')">En cours</button>
-          <button (click)="updateStatut(s.id, 'RESOLU')">Résolu</button>
-          <button (click)="updateStatut(s.id, 'REJETE')">Rejeter</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <div class="column-body">
+        <ng-container *ngFor="let s of enCours">
+          <ng-container *ngTemplateOutlet="signalementCard; context: { $implicit: s }"></ng-container>
+        </ng-container>
 
+        <p class="empty-column" *ngIf="enCours.length === 0">Aucun signalement</p>
+      </div>
+    </section>
+
+    <section class="kanban-column resolu">
+      <div class="column-header">
+        <span>✅ Résolu</span>
+        <strong>{{ resolus.length }}</strong>
+      </div>
+
+      <div class="column-body">
+        <ng-container *ngFor="let s of resolus">
+          <ng-container *ngTemplateOutlet="signalementCard; context: { $implicit: s }"></ng-container>
+        </ng-container>
+
+        <p class="empty-column" *ngIf="resolus.length === 0">Aucun signalement</p>
+      </div>
+    </section>
+
+    <section class="kanban-column rejete">
+      <div class="column-header">
+        <span>❌ Rejeté</span>
+        <strong>{{ rejetes.length }}</strong>
+      </div>
+
+      <div class="column-body">
+        <ng-container *ngFor="let s of rejetes">
+          <ng-container *ngTemplateOutlet="signalementCard; context: { $implicit: s }"></ng-container>
+        </ng-container>
+
+        <p class="empty-column" *ngIf="rejetes.length === 0">Aucun signalement</p>
+      </div>
+    </section>
+  </div>
+
+  <ng-template #signalementCard let-s>
+    <article class="signalement-card">
+      <div class="card-top">
+        <div class="card-icon">
+          {{ getTypeIcon(s.type) }}
+        </div>
+
+        <div class="card-title">
+          <h3>{{ s.type }}</h3>
+          <span>Borne #{{ s.borneId }}</span>
+        </div>
+
+        <span class="status-badge" [ngClass]="s.statut">
+          {{ getStatutLabel(s.statut) }}
+        </span>
+      </div>
+
+      <p class="description">
+        {{ s.description || 'Aucune description fournie.' }}
+      </p>
+
+      <div class="meta">
+        <span>👤 Conducteur #{{ s.conducteurId }}</span>
+        <span>{{ s.dateSignalement | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="card-actions">
+        <button
+          class="btn-action btn-cours"
+          *ngIf="s.statut !== 'EN_COURS'"
+          (click)="updateStatut(s.id, 'EN_COURS')"
+        >
+          En cours
+        </button>
+
+        <button
+          class="btn-action btn-resolu"
+          *ngIf="s.statut !== 'RESOLU'"
+          (click)="updateStatut(s.id, 'RESOLU')"
+        >
+          Résolu
+        </button>
+
+        <button
+          class="btn-action btn-rejete"
+          *ngIf="s.statut !== 'REJETE'"
+          (click)="updateStatut(s.id, 'REJETE')"
+        >
+          Rejeter
+        </button>
+      </div>
+    </article>
+  </ng-template>
 </div>

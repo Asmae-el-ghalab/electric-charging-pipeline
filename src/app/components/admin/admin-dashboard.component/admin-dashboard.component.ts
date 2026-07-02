@@ -63,9 +63,12 @@ export class AdminDashboardComponent implements OnInit {
 
   // Formulaire Borne
   showForm = false;
-  isEditMode = false;
-  newBorne: Borne = {
-    id: 0,
+  isEditMode = false; 
+  savingBorne = false;
+ newBorne: Borne = this.createEmptyBorne();
+  createEmptyBorne(): Borne {
+  return {
+    id: undefined as any,
     uuid: '',
     title: '',
     address: '',
@@ -80,13 +83,13 @@ export class AdminDashboardComponent implements OnInit {
     isOperational: true,
     usageCost: ''
   };
-
+}
   constructor(
     private authService: AuthService,
     private borneService: BorneService,
     private router: Router
   ) {}
-
+  
   ngOnInit(): void {
     this.checkAdminAccess();
     this.adminName = this.authService.getUserName();
@@ -212,58 +215,76 @@ export class AdminDashboardComponent implements OnInit {
       error: (err) => console.error(err)
     });
   }
-
+  openAddForm(): void {
+  this.newBorne = this.createEmptyBorne();
+  this.isEditMode = false;
+  this.showForm = true;
+}
   editBorne(borne: Borne): void {
     this.newBorne = { ...borne };
     this.showForm = true;
     this.isEditMode = true;
   }
 
-  resetForm(): void {
-    this.showForm = false;
-    this.isEditMode = false;
-    this.newBorne = {
-      id: 0,
-      uuid: '',
-      title: '',
-      address: '',
-      city: '',
-      province: '',
-      postcode: '',
-      latitude: 0,
-      longitude: 0,
-      operator: '',
-      operatorWebsite: '',
-      status: 'Operational',
-      isOperational: true,
-      usageCost: ''
-    };
+   resetForm(): void {
+  this.showForm = false;
+  this.isEditMode = false;
+  this.newBorne = this.createEmptyBorne();
+}
+
+   saveBorne(): void {
+  if (this.savingBorne) {
+    return;
   }
 
-  saveBorne(): void {
-    if (this.isEditMode) {
-      // 🔥 UPDATE
-      this.borneService.updateBorne(this.newBorne.id, this.newBorne)
-        .subscribe({
-          next: () => {
-            this.loadBornes();
-            this.resetForm();
-          },
-          error: (err) => console.error(err)
-        });
-    } else {
-      // 🔥 CREATE
-      this.borneService.addBorne(this.newBorne)
-        .subscribe({
-          next: () => {
-            this.loadBornes();
-            this.resetForm();
-          },
-          error: (err) => console.error(err)
-        });
+  this.savingBorne = true;
+  const payload: any = {
+    title: this.newBorne.title?.trim(),
+    address: this.newBorne.address?.trim(),
+    city: this.newBorne.city?.trim(),
+    province: this.newBorne.province?.trim(),
+    postcode: this.newBorne.postcode || '',
+    latitude: Number(this.newBorne.latitude) || 0,
+    longitude: Number(this.newBorne.longitude) || 0,
+    operator: this.newBorne.operator?.trim(),
+    operatorWebsite: this.newBorne.operatorWebsite || '',
+    status: this.newBorne.status || 'Operational',
+    isOperational: (this.newBorne.status || 'Operational') === 'Operational',
+    usageCost: this.newBorne.usageCost || '',
+    uuid: this.newBorne.uuid || crypto.randomUUID(),
+    connectorType: (this.newBorne as any).connectorType || '',
+    power: Number((this.newBorne as any).power) || 0,
+    isOccupied: false
+  };
+
+  console.log('Payload borne envoyé:', payload);
+
+  if (this.isEditMode) {
+    this.borneService.updateBorne(this.newBorne.id, payload).subscribe({
+      next: () => {
+        this.loadBornes();
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Erreur modification borne', err);
+        console.error('Erreur backend:', err.error);
+      }
+    });
+
+    return;
+  }
+
+  this.borneService.addBorne(payload).subscribe({
+    next: () => {
+      this.loadBornes();
+      this.resetForm();
+    },
+    error: (err) => {
+      console.error('Erreur ajout borne', err);
+      console.error('Erreur backend:', err.error);
     }
-  }
-
+  });
+}
   // ==================== CONNEXIONS ====================
   openConnections(borne: Borne): void {
     this.selectedBorne = borne;

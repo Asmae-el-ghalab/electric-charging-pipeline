@@ -12,8 +12,10 @@ import {
   signal,
   computed,
   effect
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+} from '@angular/core'; 
+ 
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
@@ -37,6 +39,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private renderer = inject(Renderer2);
   private el = inject(ElementRef);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   // Signals for reactive state
   isLoggedIn = signal<boolean>(false);
@@ -101,7 +104,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
       });
 
     // Initial scroll check
-    this.isScrolled.set(window.scrollY > 50);
+    if (isPlatformBrowser(this.platformId)) {
+  this.isScrolled.set(window.scrollY > 50);
+}
   }
 
   ngOnDestroy(): void {
@@ -117,7 +122,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     // Remove body scroll lock
-    this.renderer.removeStyle(document.body, 'overflow');
+  if (isPlatformBrowser(this.platformId)) {
+  this.renderer.removeStyle(document.body, 'overflow');
+}
   }
 
   // ========== AUTH METHODS ==========
@@ -210,7 +217,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     this.scrollFrame = requestAnimationFrame(() => {
-      const scrolled = window.scrollY > 50;
+      if (!isPlatformBrowser(this.platformId)) {
+  return;
+}
+
+const scrolled = window.scrollY > 50;
       if (this.isScrolled() !== scrolled) {
         this.isScrolled.set(scrolled);
         this.cdr.markForCheck();
@@ -225,7 +236,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   onResize(): void {
     clearTimeout(this.resizeTimer);
     this.resizeTimer = setTimeout(() => {
-      if (window.innerWidth > 768 && this.menuOpen()) {
+     if (!isPlatformBrowser(this.platformId)) {
+  return;
+}
+
+if (window.innerWidth > 768 && this.menuOpen()) {
         this.closeMenu();
       }
       this.cdr.markForCheck();
@@ -266,15 +281,23 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   // ========== PRIVATE HELPERS ==========
 
-  private updateBodyScroll(): void {
-    if (this.menuOpen()) {
-      this.renderer.setStyle(document.body, 'overflow', 'hidden');
-    } else {
-      this.renderer.removeStyle(document.body, 'overflow');
-    }
+ private updateBodyScroll(): void {
+
+  if (!isPlatformBrowser(this.platformId)) {
+    return;
   }
 
+  if (this.menuOpen()) {
+    this.renderer.setStyle(document.body, 'overflow', 'hidden');
+  } else {
+    this.renderer.removeStyle(document.body, 'overflow');
+  }
+
+}
   private updateMobileAuthVisibility(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+    return;
+}
     const mobileAuth = this.el.nativeElement.querySelector('.mobile-auth');
     if (mobileAuth) {
       if (this.menuOpen()) {

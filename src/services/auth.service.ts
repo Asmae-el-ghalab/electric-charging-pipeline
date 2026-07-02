@@ -451,22 +451,46 @@ export class AuthService {
     }));
   }
 
-  diagnosticAuth(): void {
-    console.log('=== DIAGNOSTIC AUTH SERVICE ===');
-    console.log('isBrowser:', this.isBrowser());
-    console.log('isLoggedIn:', this.isLoggedIn());
-    console.log('getUserId():', this.getUserId());
-    console.log('getUserIdAsNumber():', this.getUserIdAsNumber());
-    console.log('getUserRole():', this.getUserRole());
-    console.log('getUserName():', this.getUserName());
-    console.log('getUserEmail():', this.getUserEmail());
-    console.log('getToken():', this.getToken() ? '✅ Présent' : '❌ Absent');
-    console.log('isBlocked():', this.isBlocked());
+ diagnosticAuth(): void {
+
+  console.log('=== DIAGNOSTIC AUTH SERVICE ===');
+
+  console.log('isBrowser:', this.isBrowser());
+
+  console.log('isLoggedIn:', this.isLoggedIn());
+
+  console.log('getUserId():', this.getUserId());
+
+  console.log('getUserIdAsNumber():', this.getUserIdAsNumber());
+
+  console.log('getUserRole():', this.getUserRole());
+
+  console.log('getUserName():', this.getUserName());
+
+  console.log('getUserEmail():', this.getUserEmail());
+
+  console.log('getToken():', this.getToken() ? '✅ Présent' : '❌ Absent');
+
+  console.log('isBlocked():', this.isBlocked());
+
+  if (this.isBrowser()) {
+
     console.log('localStorage userId:', localStorage.getItem('userId'));
-    console.log('localStorage token:', localStorage.getItem('token') ? '✅ Présent' : '❌ Absent');
+
+    console.log(
+      'localStorage token:',
+      localStorage.getItem('token') ? '✅ Présent' : '❌ Absent'
+    );
+
     console.log('localStorage userRole:', localStorage.getItem('userRole'));
+
     console.log('localStorage userName:', localStorage.getItem('userName'));
+
     console.log('localStorage estBloque:', localStorage.getItem('estBloque'));
-    console.log('================================');
+
   }
+
+  console.log('================================');
+
+}
 }

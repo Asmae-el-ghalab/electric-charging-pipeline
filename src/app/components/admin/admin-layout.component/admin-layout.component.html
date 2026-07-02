@@ -1,35 +1,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <div class="admin-layout">
-  <!-- Sidebar -->
   <aside class="admin-sidebar">
-    <div class="sidebar-logo">
-      <span class="logo-icon">⚡</span>
-      <span class="logo-text">BorneMaroc</span>
-    </div>
+   <div class="sidebar-logo">
+  <img src="assets/img/v1.png" alt="Charge flow" class="logo-image" />
+  <span class="logo-text">ChargeFlow</span>
+</div>
 
     <nav class="sidebar-nav">
-      <a routerLink="/admin/statistics"
-   routerLinkActive="active"
-   class="nav-link">
-  <span class="nav-icon">⚠️</span>
-  <span class="nav-text">vue ensembles </span>
-</a>
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link nav-link-main"
+      >
+        <span class="nav-icon">📈</span>
+        <span class="nav-text">Vue d'ensemble</span>
+      </a>
+
+      <div class="nav-divider"></div>
+
       <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">
         <span class="nav-icon">📊</span>
-        <span class="nav-text">Dashboard</span>
+        <span class="nav-text">Gestion Bornes </span>
       </a>
+
       <a routerLink="/admin/utilisateurs" routerLinkActive="active" class="nav-link">
         <span class="nav-icon">👥</span>
         <span class="nav-text">Utilisateurs</span>
       </a>
-      <a routerLink="/admin/signalements"
-   routerLinkActive="active"
-   class="nav-link">
-  <span class="nav-icon">⚠️</span>
-  <span class="nav-text">Signalements</span>
-</a>
 
-    
+      <a routerLink="/admin/signalements" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">⚠️</span>
+        <span class="nav-text">Signalements</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -40,13 +44,14 @@
           <div class="user-role">Administrateur</div>
         </div>
       </div>
+
       <button class="btn-logout" (click)="logout()">
-        🚪 Déconnexion
+        <span>🚪</span>
+        <span>Déconnexion</span>
       </button>
     </div>
   </aside>
 
-  <!-- Contenu principal -->
   <main class="admin-content">
     <router-outlet></router-outlet>
   </main>

@@ -411,7 +411,9 @@ export class ConducteurDashboardComponent implements OnInit {
     
     this.http.get<Signalement[]>(`${this.apiUrl}/signalements`).subscribe({
       next: (data) => {
-        this.signalements = data.filter(s => s.conducteur?.id === this.conducteurIdNumber);
+       this.signalements = data.filter(
+  s => s.conducteurId === this.conducteurIdNumber
+);
         this.signalementsFiltres = [...this.signalements];
         this.updateStats();
         this.loading.signalements = false;
@@ -497,14 +499,19 @@ export class ConducteurDashboardComponent implements OnInit {
     this.loading.signalements = true;
     this.cdr.detectChanges();
     
-    const signalementData = {
-      conducteurId: this.conducteurIdNumber,
-      borneId: this.nouveauSignalement.borneId,
-      type: this.nouveauSignalement.type,
-      description: this.nouveauSignalement.description.trim()
-    };
+   const signalementData = {
+  conducteurId: this.conducteurIdNumber.toString(),
+  borneId: this.nouveauSignalement.borneId!.toString(),
+  type: this.nouveauSignalement.type,
+  description: this.nouveauSignalement.description.trim()
+};
     
-    console.log('📤 Envoi signalement:', signalementData);
+console.log("conducteurId =", signalementData.conducteurId);
+console.log("borneId =", signalementData.borneId);
+console.log("type =", signalementData.type);
+console.log("description =", signalementData.description);
+
+console.log(JSON.stringify(signalementData));
     
     this.http.post<Signalement>(`${this.apiUrl}/signalements`, signalementData).subscribe({
       next: (signalement) => {
