@@ -32,7 +32,12 @@ public class ConnectionController {
 
         return ResponseEntity.ok(updatedConnection);
     }
-
+    @PostMapping
+    public ResponseEntity<Connection> addConnection(@RequestBody Connection connection) {
+    connection.setId(null);
+    Connection savedConnection = connectionService.saveConnection(connection);
+    return ResponseEntity.status(201).body(savedConnection);
+}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteConnection(@PathVariable Long id) {
         connectionService.deleteConnection(id);

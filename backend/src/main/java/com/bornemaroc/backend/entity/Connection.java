@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Connection {
     
     @Id
-    private Long id;
-    
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
     @Column(name = "station_id")
     private Long stationId;
     

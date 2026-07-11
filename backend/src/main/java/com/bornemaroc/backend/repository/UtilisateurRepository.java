@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> {
-
+    
     Optional<Utilisateur> findByEmail(String email);
     
     boolean existsByEmail(String email);
@@ -19,9 +19,11 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     
     long countByEstBloqueTrue();
     
-    long countByRole(RoleUtilisateur role);
+    long countByRole(RoleUtilisateur role); 
+    
     
     List<Utilisateur> findByNomContainingIgnoreCaseOrEmailContainingIgnoreCase(String nom, String email);
     
-    List<Utilisateur> findByRole(RoleUtilisateur role);
+    List<Utilisateur> findByRole(RoleUtilisateur role); 
+   
 }

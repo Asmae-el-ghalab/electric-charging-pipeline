@@ -5,10 +5,8 @@ import com.bornemaroc.backend.enums.RoleUtilisateur;
 import com.bornemaroc.backend.service.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,135 +19,142 @@ public class UtilisateurController {
 
     @Autowired
     private UtilisateurService utilisateurService;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // GET - Récupérer tous les utilisateurs
+    // ==================== GET - TOUS LES UTILISATEURS ====================
     @GetMapping
     public ResponseEntity<List<Utilisateur>> getAllUtilisateurs() {
-        List<Utilisateur> utilisateurs = utilisateurService.getAllUtilisateurs();
-        return ResponseEntity.ok(utilisateurs);
+        return ResponseEntity.ok(utilisateurService.getAllUtilisateurs());
     }
 
-    // GET - Récupérer un utilisateur par ID
+    // ==================== GET - UTILISATEUR PAR ID ====================
     @GetMapping("/{id}")
     public ResponseEntity<Utilisateur> getUtilisateurById(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.getUtilisateurById(id);
-        return ResponseEntity.ok(utilisateur);
+        return ResponseEntity.ok(utilisateurService.getUtilisateurById(id));
     }
 
-    // GET - Récupérer un utilisateur par email
+    // ==================== GET - UTILISATEUR PAR EMAIL ====================
     @GetMapping("/email/{email}")
     public ResponseEntity<Utilisateur> getUtilisateurByEmail(@PathVariable String email) {
-        Utilisateur utilisateur = utilisateurService.getUtilisateurByEmail(email);
-        return ResponseEntity.ok(utilisateur);
+        return ResponseEntity.ok(utilisateurService.getUtilisateurByEmail(email));
     }
 
-    // POST - Créer un utilisateur
+    // ==================== POST - CRÉER UTILISATEUR (ADMIN) ====================
     @PostMapping
     public ResponseEntity<Utilisateur> createUtilisateur(@RequestBody Utilisateur utilisateur) {
-        Utilisateur newUtilisateur = utilisateurService.createUtilisateur(utilisateur);
-        return ResponseEntity.ok(newUtilisateur);
+        Utilisateur nouveauUtilisateur = utilisateurService.createUtilisateur(utilisateur);
+        return ResponseEntity.status(201).body(nouveauUtilisateur);
     }
 
-    // PUT - Mettre à jour un utilisateur
+    // ==================== POST - INSCRIPTION ====================
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Utilisateur utilisateur) {
+        try {
+            // Important : createUtilisateur et non register
+            Utilisateur nouveauUtilisateur = utilisateurService.createUtilisateur(utilisateur);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Inscription réussie");
+            response.put("id", nouveauUtilisateur.getId());
+            response.put("nom", nouveauUtilisateur.getNom());
+            response.put("email", nouveauUtilisateur.getEmail());
+            response.put("role", nouveauUtilisateur.getRole().name());
+
+            return ResponseEntity.status(201).body(response);
+
+        } catch (RuntimeException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // ==================== PUT - MODIFIER UTILISATEUR ====================
     @PutMapping("/{id}")
     public ResponseEntity<Utilisateur> updateUtilisateur(
             @PathVariable Long id,
             @RequestBody Utilisateur utilisateur) {
-        Utilisateur updatedUtilisateur = utilisateurService.updateUtilisateur(id, utilisateur);
-        return ResponseEntity.ok(updatedUtilisateur);
+
+        return ResponseEntity.ok(utilisateurService.updateUtilisateur(id, utilisateur));
     }
 
-    // PUT - Bloquer un utilisateur
+    // ==================== PUT - BLOQUER ====================
     @PutMapping("/{id}/bloquer")
     public ResponseEntity<Utilisateur> bloquerUtilisateur(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.bloquerUtilisateur(id);
-        return ResponseEntity.ok(utilisateur);
+        return ResponseEntity.ok(utilisateurService.bloquerUtilisateur(id));
     }
 
-    // PUT - Débloquer un utilisateur
+    // ==================== PUT - DÉBLOQUER ====================
     @PutMapping("/{id}/debloquer")
     public ResponseEntity<Utilisateur> debloquerUtilisateur(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.debloquerUtilisateur(id);
-        return ResponseEntity.ok(utilisateur);
+        return ResponseEntity.ok(utilisateurService.debloquerUtilisateur(id));
     }
 
-    // PUT - Promouvoir en administrateur
+    // ==================== PUT - PROMOUVOIR ADMIN ====================
     @PutMapping("/{id}/promouvoir")
     public ResponseEntity<Utilisateur> promouvoirAdmin(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.promouvoirAdmin(id);
-        return ResponseEntity.ok(utilisateur);
+        return ResponseEntity.ok(utilisateurService.promouvoirAdmin(id));
     }
 
-    // PUT - Rétrograder de administrateur
+    // ==================== PUT - RÉTROGRADER ====================
     @PutMapping("/{id}/retrograder")
     public ResponseEntity<Utilisateur> retrograderAdmin(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.retrograderAdmin(id);
-        return ResponseEntity.ok(utilisateur);
+        return ResponseEntity.ok(utilisateurService.retrograderAdmin(id));
     }
 
-    // DELETE - Supprimer un utilisateur
+    // ==================== DELETE ====================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> supprimerUtilisateur(@PathVariable Long id) {
         utilisateurService.supprimerUtilisateur(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    // GET - Statistiques
+    // ==================== STATISTIQUES ====================
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Long>> getStats() {
-        Map<String, Long> stats = utilisateurService.getStats();
-        return ResponseEntity.ok(stats);
+        return ResponseEntity.ok(utilisateurService.getStats());
     }
 
-    // GET - Rechercher des utilisateurs
+    // ==================== RECHERCHE ====================
     @GetMapping("/recherche")
-    public ResponseEntity<List<Utilisateur>> rechercher(@RequestParam(required = false) String term) {
-        List<Utilisateur> utilisateurs = utilisateurService.rechercher(term);
-        return ResponseEntity.ok(utilisateurs);
+    public ResponseEntity<List<Utilisateur>> rechercher(
+            @RequestParam(required = false) String term) {
+
+        return ResponseEntity.ok(utilisateurService.rechercher(term));
     }
 
-    // GET - Filtrer par rôle
+    // ==================== FILTRER PAR RÔLE ====================
     @GetMapping("/filtre/role")
     public ResponseEntity<List<Utilisateur>> filtrerParRole(@RequestParam String role) {
-        RoleUtilisateur roleEnum;
         try {
-            roleEnum = RoleUtilisateur.valueOf(role.toUpperCase());
+            RoleUtilisateur roleEnum = RoleUtilisateur.valueOf(role.toUpperCase());
+            return ResponseEntity.ok(utilisateurService.filtrerParRole(roleEnum));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
-        List<Utilisateur> utilisateurs = utilisateurService.filtrerParRole(roleEnum);
-        return ResponseEntity.ok(utilisateurs);
     }
 
-    // ==================== LOGIN AVEC VÉRIFICATION DE BLOCAGE ====================
-    
+    // ==================== LOGIN ====================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            // 1. Récupérer l'utilisateur par email
             Utilisateur utilisateur = utilisateurService.getUtilisateurByEmail(loginRequest.getEmail());
-            
-            // 2. Vérifier si l'utilisateur existe
-            if (utilisateur == null) {
-                Map<String, String> error = new HashMap<>();
+
+            if (!passwordEncoder.matches(
+                    loginRequest.getMotDePasse(),
+                    utilisateur.getMotDePasse())) {
+
+                Map<String, Object> error = new HashMap<>();
                 error.put("error", "Email ou mot de passe incorrect");
                 return ResponseEntity.status(401).body(error);
             }
-            
-            // 3. Vérifier le mot de passe
-           // 3. Vérifier le mot de passe avec BCrypt
-if (!passwordEncoder.matches(
-        loginRequest.getMotDePasse(),
-        utilisateur.getMotDePasse())) {
 
-    Map<String, String> error = new HashMap<>();
-    error.put("error", "Email ou mot de passe incorrect");
-    return ResponseEntity.status(401).body(error);
-}
-            // ✅ 4. VÉRIFICATION : Si l'utilisateur est bloqué
-            if (utilisateur.getEstBloque() != null && utilisateur.getEstBloque()) {
+            if (Boolean.TRUE.equals(utilisateur.getEstBloque())) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("error", "Votre compte est bloqué. Contactez l'administrateur.");
                 response.put("estBloque", true);
@@ -157,43 +162,36 @@ if (!passwordEncoder.matches(
                 response.put("nom", utilisateur.getNom());
                 response.put("email", utilisateur.getEmail());
                 response.put("role", utilisateur.getRole().name());
+
                 return ResponseEntity.status(403).body(response);
             }
-            
-            // 5. Générer un token
+
             String token = "token_" + utilisateur.getId() + "_" + System.currentTimeMillis();
-            
-            // 6. Construire la réponse
+
             Map<String, Object> response = new HashMap<>();
             response.put("id", utilisateur.getId());
             response.put("nom", utilisateur.getNom());
             response.put("email", utilisateur.getEmail());
             response.put("role", utilisateur.getRole().name());
-            response.put("estBloque", utilisateur.getEstBloque() != null && utilisateur.getEstBloque());
+            response.put("estBloque", Boolean.TRUE.equals(utilisateur.getEstBloque()));
             response.put("token", token);
             response.put("message", "Connexion réussie");
-            
-            System.out.println("✅ Connexion réussie pour: " + utilisateur.getEmail());
-            System.out.println("🔒 Est bloqué: " + (utilisateur.getEstBloque() != null && utilisateur.getEstBloque()));
-            
+
             return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Erreur lors de la connexion: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
+
+        } catch (RuntimeException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Email ou mot de passe incorrect");
+            return ResponseEntity.status(401).body(error);
         }
     }
 
-    // ==================== ENDPOINT POUR COMPATIBILITÉ AVEC /auth/login ====================
-    
+    // Endpoint supplémentaire : /api/utilisateurs/auth/login
     @PostMapping("/auth/login")
     public ResponseEntity<?> authLogin(@RequestBody LoginRequest loginRequest) {
         return login(loginRequest);
     }
 
-    // ==================== INNER CLASS ====================
-    
     public static class LoginRequest {
         private String email;
         private String motDePasse;
