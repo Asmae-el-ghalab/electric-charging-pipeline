@@ -35,13 +35,6 @@
         <div class="stat-label">Bloqués</div>
       </div>
     </div>
-    <div class="stat-card stat-admin">
-      <div class="stat-icon">👑</div>
-      <div>
-        <div class="stat-value">{{stats.admins}}</div>
-        <div class="stat-label">Admins</div>
-      </div>
-    </div>
   </div>
 
   <!-- Filtres -->
@@ -130,12 +123,6 @@
                       [title]="user.estBloque ? 'Débloquer' : 'Bloquer'">
                 {{user.estBloque ? '🔓' : '🔒'}}
               </button>
-              <button class="btn-action btn-promote" 
-                      *ngIf="user.role !== 'ADMIN'"
-                      (click)="promouvoirAdmin(user)" 
-                      title="Promouvoir en admin">
-                👑
-              </button>
               <button class="btn-action btn-delete" 
                       (click)="supprimerUtilisateur(user)" 
                       title="Supprimer">
@@ -210,16 +197,6 @@
 
       <div class="detail-actions">
         <h4>Actions</h4>
-        <button class="detail-btn btn-promote" 
-                *ngIf="selectedUtilisateur.role !== 'ADMIN'"
-                (click)="promouvoirAdmin(selectedUtilisateur)">
-          👑 Promouvoir admin
-        </button>
-        <button class="detail-btn btn-demote" 
-                *ngIf="selectedUtilisateur.role === 'ADMIN'"
-                (click)="retrograderAdmin(selectedUtilisateur)">
-          ⬇️ Rétrograder
-        </button>
         <button class="detail-btn btn-block" 
                 (click)="toggleBloquer(selectedUtilisateur)">
           {{selectedUtilisateur.estBloque ? '🔓 Débloquer' : '🔒 Bloquer'}}
@@ -232,4 +209,3 @@
     </div>
   </div>
 </div>
-

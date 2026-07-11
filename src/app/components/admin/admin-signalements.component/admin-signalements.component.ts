@@ -95,5 +95,6 @@ getTypeIcon(type: string): string {
   if (value.includes('prix')) return '💰';
 
   return '⚠️';
-}
+} 
+
 }

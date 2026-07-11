@@ -10,23 +10,24 @@
   <!-- ============================================================
        HERO SECTION
        ============================================================ -->
-  <section class="hero">
-    <video #heroVideo class="hero-video-bg" autoplay loop muted playsinline>
-      <source src='/assets/img/vv.mp4' type="video/mp4">
-      <source src='/assets/img/vv.mp4' type="video/mp4">
-      Votre navigateur ne supporte pas la vidéo.
-    </video>
-    <div class="hero-overlay"></div>
+ <section class="hero">
+  <div class="hero-slideshow">
+    <div class="hero-slide" style="background-image:url('/assets/img/6.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('/assets/img/8.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('/assets/img/4.jpg')"></div> 
+    
+  </div>
+  <div class="hero-overlay"></div>
 
-    <div class="hero-container">
-      <div class="hero-content">
-        <h1 class="hero-title">
-          Trouvez facilement les bornes de recharge <span class="highlight">au Maroc</span>
-        </h1>
-        <p class="hero-subtitle">Accueil > Bornes</p>
-      </div>
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Trouvez facilement les bornes de recharge <span class="highlight">au Maroc</span>
+      </h1>
+      <p class="hero-subtitle">Accueil > Bornes</p>
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- ============================================================
        STATIONS HEADER
@@ -358,57 +359,110 @@
   <!-- ============================================================
        FOOTER
        ============================================================ -->
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a routerLink="/" class="logo">
-            <span class="logo-icon">⚡</span>
-            <span class="logo-text">RechargeMaroc</span>
+ <footer class="footer">
+  <div class="footer-glow footer-glow-left"></div>
+  <div class="footer-glow footer-glow-right"></div>
+
+  <div class="footer-container">
+
+    <div class="footer-top">
+      <div class="footer-brand">
+
+        <a routerLink="/" class="footer-logo-link" aria-label="Accueil ChargeFlow">
+          <img
+            src="assets/img/v1.png"
+            alt="ChargeFlow"
+            class="footer-logo"
+          />
+        </a>
+
+        <p class="footer-description">
+          La plateforme marocaine intelligente pour localiser les bornes de recharge
+          pour véhicules électriques et planifier vos trajets facilement.
+        </p>
+
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
           </a>
-          <p>La première plateforme marocaine de localisation des bornes de recharge pour véhicules électriques.</p>
-          <div class="footer-social">
-            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          </div>
-        </div>
 
-        <div class="footer-links">
-          <h4>Liens rapides</h4>
-          <ul>
-            <li><a routerLink="/">Accueil</a></li>
-            <li><a routerLink="/recherche">Recherche</a></li>
-            <li><a routerLink="/stations">Bornes</a></li>
-            <li><a routerLink="/a-propos">À propos</a></li>
-            <li><a routerLink="/contact">Contact</a></li>
-          </ul>
-        </div>
+          <a href="#" aria-label="Twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
 
-        <div class="footer-links">
-          <h4>Ressources</h4>
-          <ul>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Conditions d'utilisation</a></li>
-            <li><a href="#">Politique de confidentialité</a></li>
-          </ul>
-        </div>
+          <a href="#" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
 
-        <div class="footer-contact">
-          <h4>Contact</h4>
-          <ul>
-            <li><i class="fas fa-envelope"></i> contact@rechargemaroc.ma</li>
-            <li><i class="fas fa-phone"></i> +212 5 22 33 44 55</li>
-            <li><i class="fas fa-map-marker-alt"></i> Casablanca, Maroc</li>
-          </ul>
+          <a href="#" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
         </div>
       </div>
 
-      <div class="footer-bottom">
-        <p>&copy; 2024 RechargeMaroc. Tous droits réservés.</p>
+      <div class="footer-links">
+        <h4>Navigation</h4>
+
+        <ul>
+          <li><a routerLink="/"><i class="fas fa-chevron-right"></i> Accueil</a></li>
+          <li><a routerLink="/carte"><i class="fas fa-chevron-right"></i> Carte</a></li>
+          <li><a routerLink="/bornes"><i class="fas fa-chevron-right"></i> Bornes</a></li>
+          <li><a routerLink="/a-propos"><i class="fas fa-chevron-right"></i> À propos</a></li>
+          <li><a routerLink="/contact"><i class="fas fa-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Ressources</h4>
+
+        <ul>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> FAQ</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Blog</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Conditions d'utilisation</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Politique de confidentialité</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h4>Contact</h4>
+
+        <ul>
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <span>contact@chargeflow.ma</span>
+          </li>
+
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-phone"></i>
+            </span>
+            <span>+212 5 22 33 44 55</span>
+          </li>
+
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </span>
+            <span>Casablanca, Maroc</span>
+          </li>
+        </ul>
       </div>
     </div>
-  </footer>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-bottom">
+      <p>© 2026 ChargeFlow. Tous droits réservés.</p>
+
+      <div class="footer-bottom-links">
+        <a href="#">Confidentialité</a>
+        <span></span>
+        <a href="#">Mentions légales</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
 </div>

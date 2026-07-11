@@ -477,7 +477,11 @@
 }
 
 .metric .metric-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
   font-size: 0.8rem;
   color: var(--gray);
   font-weight: 500;
@@ -502,6 +506,55 @@
 
 .metric.danger .metric-value {
   color: #DC2626;
+}
+
+/* ============================================================
+   CHRONO LIVE (temps réel, secondes)
+   ============================================================ */
+
+.chrono-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 7px;
+  border-radius: 50px;
+}
+
+.chrono-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: chronoBlink 1s ease-in-out infinite;
+}
+
+.metric.warning .chrono-live {
+  color: #D97706;
+  background: #FEF3C7;
+}
+
+.metric.warning .chrono-live::before {
+  background: #D97706;
+}
+
+.metric.danger .chrono-live {
+  color: #DC2626;
+  background: #FEE2E2;
+}
+
+.metric.danger .chrono-live::before {
+  background: #DC2626;
+}
+
+@keyframes chronoBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 /* ============================================================
@@ -1123,6 +1176,15 @@
   .modal-actions .btn-cancel:hover {
     background: #6B7A8F;
   }
+
+  .chrono-live {
+    color: #4DD0E1;
+    background: #0E3A40;
+  }
+
+  .chrono-live::before {
+    background: #4DD0E1;
+  }
 }
 
 /* ============================================================
@@ -1138,6 +1200,10 @@
   }
 
   .progress-fill.progress-danger {
+    animation: none !important;
+  }
+
+  .chrono-live::before {
     animation: none !important;
   }
 }

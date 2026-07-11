@@ -31,8 +31,8 @@ export class BorneService {
   }
 
   // Ajouter
-  addBorne(borne: Borne) {
-  return this.http.post<Borne>('http://localhost:8081/api/bornes', borne);
+ addBorne(borne: any) {
+  return this.http.post<any>('http://localhost:8081/api/bornes', borne);
 }
 
   // Modifier uniquement le statut
@@ -86,6 +86,12 @@ getConnectionsByBorne(id: number): Observable<Connection[]> {
     `http://localhost:8081/api/connections/station/${id}`
   );
 
+} 
+ addConnection(connection: any) {
+  return this.http.post<any>(
+    `http://localhost:8081/api/bornes/${connection.stationId}/connections`,
+    connection
+  );
 }
 // Modifier une connexion - AVEC LOGS
 updateConnection(id: number, connection: any): Observable<any> {

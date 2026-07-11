@@ -68,12 +68,24 @@
 
         <h2>Gestion des Bornes</h2>
 
-        <button class="btn-add"
-        (click)="openAddForm()">
+       <div class="header-actions">
 
-          ➕ Ajouter une borne
+  <button
+    class="btn-refresh"
+    type="button"
+    (click)="refreshBornes()"
+    title="Actualiser la liste">
+    ↻ Actualiser
+  </button>
 
-        </button>
+  <button
+    class="btn-add"
+    type="button"
+    (click)="openAddForm()">
+    ➕ Ajouter une borne
+  </button>
+
+</div>
 
       </div>
 
@@ -171,29 +183,36 @@
 <td>{{ borne.usageCost || '-' }}</td>
 
 <td>
-  <span class="badge">
-    {{borne.status}}
-  </span>
+  <span class="badge" [ngClass]="getStatusClass(borne.status)">
+  {{ getStatusLabel(borne.status) }}
+</span>
 </td>
 
-            <td>
+    <td>
+  <div class="actions-cell">
 
-  <button
-    class="btn-edit"
-    (click)="editBorne(borne)">
-    ✏
-  </button>
+    <button
+      class="btn-edit"
+      (click)="editBorne(borne)"
+      title="Modifier">
+      ✏️
+    </button>
 
-  <button
-    class="btn-delete"
-    (click)="deleteBorne(borne.id)">
-    🗑
-  </button>
-<button
- class="btn-connections"
- (click)="openConnections(borne)">
- 👁️ Détails
-</button>
+    <button
+      class="btn-delete"
+      (click)="deleteBorne(borne.id)"
+      title="Supprimer">
+      🗑️
+    </button>
+
+    <button
+      class="btn-connections"
+      (click)="openConnections(borne)"
+      title="Voir les détails">
+      👁️
+    </button>
+
+  </div>
 </td>
 
           </tr>
@@ -298,13 +317,11 @@
 
       [(ngModel)]="newBorne.operator">
 
-    <input
-
-      type="text"
-
-      placeholder="Status"
-
-      [(ngModel)]="newBorne.status">
+    <select class="form-control" [(ngModel)]="newBorne.status">
+  <option value="Operational">Opérationnelle</option>
+  <option value="Maintenance">En maintenance</option>
+  <option value="OutOfService">Hors service</option>
+</select>
 
     <input
 
@@ -347,7 +364,13 @@
 
  <div class="connections-modal" *ngIf="showConnectionsModal">
   <div class="connections-content">
-    <h2>🔌 Connexions - {{selectedBorne?.title}}</h2>
+    <h2>🔌 Connexions - {{selectedBorne?.title}}</h2> 
+    <button
+  class="btn-add-connection"
+  type="button"
+  (click)="openAddConnection()">
+  ➕ Ajouter une connexion
+</button>
 
     <table class="connections-table">
       <thead>
@@ -448,4 +471,54 @@
     </div>
   </div>
 </div>
+</div> 
+<div class="edit-connection-modal" *ngIf="showAddConnectionModal">
+  <div class="edit-connection-content">
+    <h2>➕ Ajouter une connexion</h2>
+
+    <div class="form-group">
+      <label>Type de connexion</label>
+      <input [(ngModel)]="newConnection.connectionType" type="text" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Puissance (kW)</label>
+      <input [(ngModel)]="newConnection.powerKw" type="number" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Quantité</label>
+      <input [(ngModel)]="newConnection.quantity" type="number" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Voltage (V)</label>
+      <input [(ngModel)]="newConnection.voltage" type="number" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Ampères</label>
+      <input [(ngModel)]="newConnection.amps" type="number" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Niveau</label>
+      <input [(ngModel)]="newConnection.level" type="text" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Type de courant</label>
+      <input [(ngModel)]="newConnection.currentType" type="text" class="form-control">
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-save" type="button" (click)="saveNewConnection()">
+        Enregistrer
+      </button>
+
+      <button class="btn-cancel" type="button" (click)="closeAddConnectionModal()">
+        Annuler
+      </button>
+    </div>
+  </div>
 </div>

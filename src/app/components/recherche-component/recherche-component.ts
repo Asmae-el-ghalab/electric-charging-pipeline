@@ -2,11 +2,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { timeout, retry, catchError } from 'rxjs/operators';
-import { of, TimeoutError } from 'rxjs';
-
+import { timeout, retry } from 'rxjs/operators';
+import { TimeoutError } from 'rxjs';
 
 interface Borne {
   id: number;
@@ -21,6 +20,9 @@ interface Borne {
   usageCost?: string;
   isOccupied?: boolean;
   power?: number;
+
+  // Pour ouvrir/fermer les boutons derrière la carte
+  showActions?: boolean;
 }
 
 interface PageResponse {
@@ -41,19 +43,20 @@ interface PageResponse {
 export class RechercheComponent implements OnInit {
   bornes: Borne[] = [];
   filteredBornes: Borne[] = [];
+
   isLoading = true;
   loadingError = false;
   errorMessage = '';
+
   searchTerm = '';
   statusFilter = '';
   operationalCount = 0;
-  
-  // Pagination
+
   currentPage = 0;
   pageSize = 9;
   totalPages = 0;
   totalElements = 0;
-  
+
   statusOptions = [
     { value: '', label: 'Tous les statuts' },
     { value: 'Operational', label: '✅ Opérationnelle' },
@@ -70,54 +73,57 @@ export class RechercheComponent implements OnInit {
   ngOnInit(): void {
     this.loadBornesFromServer();
   }
-// Ajoutez cette méthode dans votre classe RechercheComponent
-learnMore(): void {
-  // Vous pouvez soit rediriger vers une page "à propos"
-  this.router.navigate(['/a-propos']);
-  
-  // Ou ouvrir une modale/alert
-  // alert('ChargeMap Maroc - La première plateforme dédiée aux bornes de recharge au Maroc');
-}
-  // Chargement uniquement depuis l'API
+
   private loadBornesFromServer(): void {
-    console.log('🌐 Chargement depuis le serveur...');
     this.isLoading = true;
     this.loadingError = false;
-    
-    this.http.get<PageResponse>('http://localhost:8081/api/bornes?page=0&size=100')
+
+    this.http
+      .get<PageResponse>('http://localhost:8081/api/bornes?page=0&size=100')
       .pipe(
         timeout(10000),
         retry(2)
       )
       .subscribe({
         next: (response: PageResponse) => {
-          console.log('✅ Données chargées avec succès', response);
           if (response && response.content) {
-            this.bornes = response.content;
+            this.bornes = response.content.map((borne: Borne) => ({
+              ...borne,
+              showActions: false
+            }));
+
             this.filteredBornes = [...this.bornes];
-            this.operationalCount = this.bornes.filter(b => b.status === 'Operational').length;
+            this.operationalCount = this.bornes.filter(
+              borne => borne.status === 'Operational'
+            ).length;
+
             this.totalElements = response.totalElements;
-            this.totalPages = response.totalPages;
             this.updatePagination();
+
             this.isLoading = false;
             this.loadingError = false;
           }
         },
+
         error: (error: any) => {
-          console.error('❌ Erreur chargement:', error);
           this.isLoading = false;
           this.loadingError = true;
-          
+
           if (error instanceof TimeoutError) {
-            this.errorMessage = '⏱️ Délai dépassé. Le serveur met trop de temps à répondre.';
+            this.errorMessage =
+              '⏱️ Délai dépassé. Le serveur met trop de temps à répondre.';
           } else if (error.status === 0) {
-            this.errorMessage = '❌ Serveur indisponible. Vérifiez que le backend est démarré sur http://localhost:8081';
+            this.errorMessage =
+              '❌ Serveur indisponible. Vérifiez que le backend est démarré sur http://localhost:8081';
           } else if (error.status === 404) {
-            this.errorMessage = '❌ API non trouvée. Vérifiez l\'URL du backend.';
+            this.errorMessage =
+              '❌ API non trouvée. Vérifiez l’URL du backend.';
           } else if (error.status === 500) {
-            this.errorMessage = '❌ Erreur serveur. Veuillez réessayer plus tard.';
+            this.errorMessage =
+              '❌ Erreur serveur. Veuillez réessayer plus tard.';
           } else {
-            this.errorMessage = `❌ Erreur: ${error.message || 'Connexion impossible'}`;
+            this.errorMessage =
+              `❌ Erreur : ${error.message || 'Connexion impossible'}`;
           }
         }
       });
@@ -140,21 +146,23 @@ learnMore(): void {
 
   filterStations(): void {
     let filtered = [...this.bornes];
-    
+
     if (this.statusFilter) {
-      filtered = filtered.filter(b => b.status === this.statusFilter);
+      filtered = filtered.filter(borne => borne.status === this.statusFilter);
     }
-    
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(b => 
-        (b.title?.toLowerCase().includes(term)) ||
-        (b.city?.toLowerCase().includes(term)) ||
-        (b.operator?.toLowerCase().includes(term)) ||
-        (b.address?.toLowerCase().includes(term))
+
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+
+      filtered = filtered.filter(borne =>
+        borne.title?.toLowerCase().includes(term) ||
+        borne.city?.toLowerCase().includes(term) ||
+        borne.province?.toLowerCase().includes(term) ||
+        borne.operator?.toLowerCase().includes(term) ||
+        borne.address?.toLowerCase().includes(term)
       );
     }
-    
+
     this.filteredBornes = filtered;
     this.updatePagination();
   }
@@ -171,7 +179,6 @@ learnMore(): void {
     this.updatePagination();
   }
 
-  // Pagination
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
@@ -192,29 +199,46 @@ learnMore(): void {
     const pages: number[] = [];
     const start = Math.max(0, this.currentPage - 2);
     const end = Math.min(this.totalPages, start + 5);
+
     for (let i = start; i < end; i++) {
       pages.push(i);
     }
+
     return pages;
   }
 
-  // Utilitaires
   getStatusClass(status: string): string {
-    switch(status) {
-      case 'Operational': return 'status-operational';
-      case 'Maintenance': return 'status-maintenance';
-      case 'OutOfService': return 'status-outofservice';
-      default: return 'status-planned';
+    switch (status) {
+      case 'Operational':
+        return 'operational';
+
+      case 'Maintenance':
+        return 'maintenance';
+
+      case 'OutOfService':
+        return 'outofservice';
+
+      default:
+        return 'planned';
     }
   }
 
   getStatusText(status: string): string {
-    switch(status) {
-      case 'Operational': return '✅ Opérationnelle';
-      case 'Maintenance': return '🔧 En maintenance';
-      case 'OutOfService': return '❌ Hors service';
-      case 'Planned': return '📅 Planifiée';
-      default: return 'Statut inconnu';
+    switch (status) {
+      case 'Operational':
+        return '✅ Opérationnelle';
+
+      case 'Maintenance':
+        return '🔧 En maintenance';
+
+      case 'OutOfService':
+        return '❌ Hors service';
+
+      case 'Planned':
+        return '📅 Planifiée';
+
+      default:
+        return 'Statut inconnu';
     }
   }
 
@@ -222,6 +246,7 @@ learnMore(): void {
     if (!operator || operator === '(Unknown Operator)' || operator === 'NULL') {
       return 'Opérateur inconnu';
     }
+
     return operator;
   }
 
@@ -229,6 +254,7 @@ learnMore(): void {
     if (!cost || cost === 'Non disponible' || cost === '0' || cost === 'Free') {
       return 'Gratuit';
     }
+
     return cost;
   }
 
@@ -236,15 +262,31 @@ learnMore(): void {
     return borne.status === 'Operational' && !borne.isOccupied;
   }
 
+  toggleCard(borne: Borne): void {
+    this.bornes.forEach(item => {
+      if (item.id !== borne.id) {
+        item.showActions = false;
+      }
+    });
+
+    borne.showActions = !borne.showActions;
+  }
+
   goToBorneDetail(id: number): void {
     this.router.navigate(['/bornes', id]);
   }
 
   openMaps(latitude: number, longitude: number): void {
-    window.open(`https://www.google.com/maps?q=${latitude},${longitude}`, '_blank');
+    window.open(
+      `https://www.google.com/maps?q=${latitude},${longitude}`,
+      '_blank'
+    );
   }
 
   scrollToTop(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 }

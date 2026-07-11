@@ -234,22 +234,22 @@ export class AuthService {
       );
   }
 
-  register(userData: RegisterRequest): Observable<RegisterResponse> {
-    console.log('📤 Envoi de la requête d\'inscription:', userData.email);
-    
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, userData)
-      .pipe(
-        tap(response => {
-          console.log('✅ Inscription réussie:', response);
-          
-          if (response.success && response.user && this.isBrowser()) {
-            localStorage.setItem('userId', response.user.id.toString());
-            console.log('✅ ID utilisateur stocké:', response.user.id);
-          }
-        }),
-        catchError(this.handleError)
-      );
-  }
+   register(userData: RegisterRequest): Observable<any> {
+  console.log('📤 Envoi de la requête d\'inscription:', userData.email);
+
+  return this.http.post<any>(this.apiUrl, userData)
+    .pipe(
+      tap(response => {
+        console.log('✅ Inscription réussie:', response);
+
+        if (response && response.id && this.isBrowser()) {
+          localStorage.setItem('userId', response.id.toString());
+          console.log('✅ ID utilisateur stocké:', response.id);
+        }
+      }),
+      catchError(this.handleError)
+    );
+}
 
   logout(): void {
     console.log('🚪 Déconnexion en cours...');

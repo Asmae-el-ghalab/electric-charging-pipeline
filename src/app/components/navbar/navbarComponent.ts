@@ -1,10 +1,11 @@
 // src/app/components/navbar/navbar.component.ts
-import { 
-  Component, 
-  OnInit, 
-  OnDestroy, 
-  HostListener, 
-  Renderer2, 
+
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  HostListener,
+  Renderer2,
   ElementRef,
   inject,
   ChangeDetectionStrategy,
@@ -12,14 +13,20 @@ import {
   signal,
   computed,
   effect
-} from '@angular/core'; 
- 
+} from '@angular/core';
+
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  Subject,
+  takeUntil,
+  debounceTime,
+  distinctUntilChanged,
+  filter
+} from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -28,11 +35,13 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
   templateUrl: './navbarComponent.html',
   styleUrls: ['./navbarComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
-})// src/app/components/navbar/navbar.component.ts
-// src/app/components/navbar/navbar.component.ts
-
+})
 export class NavbarComponent implements OnInit, OnDestroy {
-  // Injections
+
+  /* =========================
+     INJECTIONS
+  ========================= */
+
   private authService = inject(AuthService);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
@@ -41,20 +50,37 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
 
-  // Signals for reactive state
+  /* =========================
+     ROUTE STATE
+     Accueil = transparent
+     Autres pages = navbar blanche
+  ========================= */
+
+  isHomePage = signal<boolean>(true);
+
+  /* =========================
+     AUTH STATE
+  ========================= */
+
   isLoggedIn = signal<boolean>(false);
   userName = signal<string>('');
   userRole = signal<string>('');
   userEmail = signal<string>('');
   userId = signal<string | null>(null);
-  
-  // UI State
+
+  /* =========================
+     UI STATE
+  ========================= */
+
   menuOpen = signal<boolean>(false);
   dropdownOpen = signal<boolean>(false);
   isScrolled = signal<boolean>(false);
   isLoading = signal<boolean>(false);
 
-  // Computed signals
+  /* =========================
+     COMPUTED SIGNALS
+  ========================= */
+
   userInitial = computed(() => {
     const name = this.userName();
     return name ? name.charAt(0).toUpperCase() : 'U';
@@ -75,23 +101,40 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return role === 'PASSAGER' || role === 'ROLE_PASSAGER';
   });
 
-  // Private
+  /* =========================
+     PRIVATE VARIABLES
+  ========================= */
+
   private destroy$ = new Subject<void>();
   private scrollFrame: number | null = null;
   private resizeTimer: any;
 
   constructor() {
-    // Effect to react to auth changes
     effect(() => {
       this.checkAuthStatus();
     });
   }
 
   ngOnInit(): void {
-    // Initial auth check
     this.checkAuthStatus();
 
-    // Subscribe to auth changes
+    /* Détecter la page actuelle au démarrage */
+    this.updateHomePageState(this.router.url);
+
+    /* Détecter chaque changement de page */
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        this.updateHomePageState(event.urlAfterRedirects);
+        this.closeMenu();
+        this.closeDropdown();
+        this.cdr.markForCheck();
+      });
+
+    /* Observer les changements de connexion */
     this.authService.user$
       .pipe(
         takeUntil(this.destroy$),
@@ -103,31 +146,47 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       });
 
-    // Initial scroll check
+    /* Vérifier scroll au chargement */
     if (isPlatformBrowser(this.platformId)) {
-  this.isScrolled.set(window.scrollY > 50);
-}
+      this.isScrolled.set(window.scrollY > 50);
+    }
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    
+
     if (this.resizeTimer) {
       clearTimeout(this.resizeTimer);
     }
-    
-    if (this.scrollFrame !== null) {
+
+    if (this.scrollFrame !== null && isPlatformBrowser(this.platformId)) {
       cancelAnimationFrame(this.scrollFrame);
     }
 
-    // Remove body scroll lock
-  if (isPlatformBrowser(this.platformId)) {
-  this.renderer.removeStyle(document.body, 'overflow');
-}
+    if (isPlatformBrowser(this.platformId)) {
+      this.renderer.removeStyle(document.body, 'overflow');
+    }
   }
 
-  // ========== AUTH METHODS ==========
+  /* =========================
+     ROUTE METHODS
+  ========================= */
+
+ private updateHomePageState(url: string): void {
+  const cleanUrl = url.split('?')[0].split('#')[0];
+
+  /* Pages avec navbar transparente en haut : Accueil + À propos */
+  const transparentPages = ['/', '', '/bornes'];
+
+  this.isHomePage.set(transparentPages.includes(cleanUrl));
+
+  this.cdr.markForCheck();
+}
+
+  /* =========================
+     AUTH METHODS
+  ========================= */
 
   checkAuthStatus(): void {
     const loggedIn = this.authService.isLoggedIn();
@@ -135,20 +194,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     if (loggedIn) {
       const user = this.authService.getUser();
+
       if (user) {
         this.userName.set(user.nom || 'Utilisateur');
         this.userRole.set(user.role || '');
         this.userEmail.set(user.email || '');
         this.userId.set(user.id || null);
       } else {
-        // Fallback: get from localStorage directly
         this.userName.set(this.authService.getUserName() || 'Utilisateur');
         this.userRole.set(this.authService.getUserRole() || '');
         this.userEmail.set(this.authService.getUserEmail() || '');
         this.userId.set(this.authService.getUserId());
       }
     } else {
-      // Clear state
       this.userName.set('');
       this.userRole.set('');
       this.userEmail.set('');
@@ -159,34 +217,31 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    // Show loading state
     this.isLoading.set(true);
-    
-    // Close all menus
+
     this.dropdownOpen.set(false);
     this.closeMenu();
-    
-    // Perform logout
+
     this.authService.logout();
-    
-    // Update state
+
     this.isLoggedIn.set(false);
     this.userName.set('');
     this.userRole.set('');
     this.userEmail.set('');
     this.userId.set(null);
+
     this.isLoading.set(false);
-    
-    // Notify user
+
     this.notificationService.success('Déconnexion réussie');
-    
-    // Navigate to home
+
     this.router.navigate(['/']);
-    
+
     this.cdr.markForCheck();
   }
 
-  // ========== UI METHODS ==========
+  /* =========================
+     UI METHODS
+  ========================= */
 
   toggleMenu(): void {
     this.menuOpen.update(value => !value);
@@ -208,52 +263,61 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.dropdownOpen.set(false);
   }
 
-  // ========== SCROLL HANDLING ==========
+  /* =========================
+     SCROLL
+  ========================= */
 
   @HostListener('window:scroll')
   onWindowScroll(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     if (this.scrollFrame !== null) {
       cancelAnimationFrame(this.scrollFrame);
     }
 
     this.scrollFrame = requestAnimationFrame(() => {
-      if (!isPlatformBrowser(this.platformId)) {
-  return;
-}
+      const scrolled = window.scrollY > 50;
 
-const scrolled = window.scrollY > 50;
       if (this.isScrolled() !== scrolled) {
         this.isScrolled.set(scrolled);
         this.cdr.markForCheck();
       }
+
       this.scrollFrame = null;
     });
   }
 
-  // ========== RESIZE HANDLING ==========
+  /* =========================
+     RESIZE
+  ========================= */
 
   @HostListener('window:resize')
   onResize(): void {
-    clearTimeout(this.resizeTimer);
-    this.resizeTimer = setTimeout(() => {
-     if (!isPlatformBrowser(this.platformId)) {
-  return;
-}
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-if (window.innerWidth > 768 && this.menuOpen()) {
+    clearTimeout(this.resizeTimer);
+
+    this.resizeTimer = setTimeout(() => {
+      if (window.innerWidth > 768 && this.menuOpen()) {
         this.closeMenu();
       }
+
       this.cdr.markForCheck();
     }, 150);
   }
 
-  // ========== CLICK OUTSIDE ==========
+  /* =========================
+     CLICK OUTSIDE
+  ========================= */
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
-    
-    // Close dropdown if clicking outside
+
     if (!target.closest('.user-dropdown') && !target.closest('.mobile-menu-btn')) {
       if (this.dropdownOpen()) {
         this.dropdownOpen.set(false);
@@ -262,43 +326,48 @@ if (window.innerWidth > 768 && this.menuOpen()) {
     }
   }
 
-  // ========== KEYBOARD ACCESSIBILITY ==========
+  /* =========================
+     KEYBOARD
+  ========================= */
 
-  // ✅ CORRECTION: Utiliser 'keydown' au lieu de 'keydown.escape' pour éviter l'erreur de typage
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
-    // Vérifier si la touche est Escape
     if (event.key === 'Escape') {
       if (this.dropdownOpen()) {
         this.dropdownOpen.set(false);
       }
+
       if (this.menuOpen()) {
         this.closeMenu();
       }
+
       this.cdr.markForCheck();
     }
   }
 
-  // ========== PRIVATE HELPERS ==========
+  /* =========================
+     PRIVATE HELPERS
+  ========================= */
 
- private updateBodyScroll(): void {
+  private updateBodyScroll(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-  if (!isPlatformBrowser(this.platformId)) {
-    return;
+    if (this.menuOpen()) {
+      this.renderer.setStyle(document.body, 'overflow', 'hidden');
+    } else {
+      this.renderer.removeStyle(document.body, 'overflow');
+    }
   }
 
-  if (this.menuOpen()) {
-    this.renderer.setStyle(document.body, 'overflow', 'hidden');
-  } else {
-    this.renderer.removeStyle(document.body, 'overflow');
-  }
-
-}
   private updateMobileAuthVisibility(): void {
     if (!isPlatformBrowser(this.platformId)) {
-    return;
-}
+      return;
+    }
+
     const mobileAuth = this.el.nativeElement.querySelector('.mobile-auth');
+
     if (mobileAuth) {
       if (this.menuOpen()) {
         this.renderer.addClass(mobileAuth, 'active');
@@ -308,7 +377,9 @@ if (window.innerWidth > 768 && this.menuOpen()) {
     }
   }
 
-  // ========== PUBLIC HELPERS ==========
+  /* =========================
+     ACCESSIBILITY HELPERS
+  ========================= */
 
   getButtonAriaLabel(): string {
     return this.menuOpen() ? 'Fermer le menu' : 'Ouvrir le menu';

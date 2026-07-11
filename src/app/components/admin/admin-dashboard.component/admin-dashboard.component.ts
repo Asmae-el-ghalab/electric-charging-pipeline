@@ -6,6 +6,7 @@ import { BorneService } from '../../../../services/borne.service';
 import { Borne } from '../../../models/borne.model';
 import { FormsModule } from '@angular/forms';
 import { Connection } from '../../../models/connection.model';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -60,7 +61,18 @@ export class AdminDashboardComponent implements OnInit {
     level: '',
     currentType: ''
   };
+ showAddConnectionModal = false;
 
+newConnection: any = {
+  stationId: null,
+  connectionType: '',
+  powerKw: 0,
+  quantity: 1,
+  voltage: 0,
+  amps: 0,
+  level: '',
+  currentType: ''
+};
   // Formulaire Borne
   showForm = false;
   isEditMode = false; 
@@ -103,52 +115,102 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // ==================== CHARGEMENT ====================
-  loadBornes(): void {
-    this.borneService.getBornes(0, 100).subscribe({
-      next: (res) => {
-        this.bornes = res.content;
-        this.filteredBornes = [...this.bornes];
-        this.currentPage = 1;
-        this.updatePagination();
-        this.cities = [...new Set(
-          this.bornes
-            .map(b => b.city)
-            .filter(city => city)
-        )];
-        this.operators = [...new Set(
-          this.bornes
-            .map(b => b.operator)
-            .filter(op => op)
-        )];
-        this.calculateStats();
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+   loadBornes(): void {
+  this.borneService.getBornes(0, 1000).subscribe({
+    next: (res: any) => {
+      const data = Array.isArray(res) ? res : (res.content || []);
+
+      this.bornes = data;
+      this.filteredBornes = [...this.bornes];
+
+      this.cities = [...new Set(
+        this.bornes
+          .map(b => b.city)
+          .filter(city => city)
+      )];
+
+      this.operators = [...new Set(
+        this.bornes
+          .map(b => b.operator)
+          .filter(op => op)
+      )];
+
+      this.calculateStats();
+      this.currentPage = 1;
+      this.updatePagination();
+
+      console.log('Bornes chargées:', this.bornes.length);
+    },
+    error: (err) => {
+      console.error('Erreur chargement bornes', err);
+    }
+  });
+} 
+normalizeStatus(status: string | null | undefined): string {
+  return (status || '')
+    .toLowerCase()
+    .replace(/_/g, '')
+    .replace(/\s/g, '');
+}
+
+getStatusLabel(status: string | null | undefined): string {
+  switch (this.normalizeStatus(status)) {
+    case 'operational':
+      return 'Opérationnelle';
+    case 'maintenance':
+      return 'En maintenance';
+    case 'outofservice':
+      return 'Hors service';
+    default:
+      return status || '-';
   }
+}
+
+getStatusClass(status: string | null | undefined): string {
+  switch (this.normalizeStatus(status)) {
+    case 'operational':
+      return 'status-operational';
+    case 'maintenance':
+      return 'status-maintenance';
+    case 'outofservice':
+      return 'status-out';
+    default:
+      return '';
+  }
+}
 
   // ==================== STATISTIQUES ====================
   calculateStats(): void {
-    this.stats.totalBornes = this.bornes.length;
-    this.stats.disponibles = this.bornes.filter(
-      b => b.status?.toLowerCase() === 'operational'
-    ).length;
-    this.stats.maintenance = this.bornes.filter(
-      b => b.status?.toLowerCase() === 'maintenance'
-    ).length;
-    this.stats.horsService = this.bornes.filter(
-      b => b.status?.toLowerCase() === 'out_of_service'
-    ).length;
+  this.stats.totalBornes = this.bornes.length;
+
+  this.stats.disponibles = this.bornes.filter(
+    b => this.normalizeStatus(b.status) === 'operational'
+  ).length;
+
+  this.stats.maintenance = this.bornes.filter(
+    b => this.normalizeStatus(b.status) === 'maintenance'
+  ).length;
+
+  this.stats.horsService = this.bornes.filter(
+    b => this.normalizeStatus(b.status) === 'outofservice'
+  ).length;
+}
+  // ==================== PAGINATION ====================
+ updatePagination(): void {
+  this.totalPages = Math.max(
+    1,
+    Math.ceil(this.filteredBornes.length / this.pageSize)
+  );
+
+  if (this.currentPage > this.totalPages) {
+    this.currentPage = this.totalPages;
   }
 
-  // ==================== PAGINATION ====================
-  updatePagination(): void {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedBornes = this.filteredBornes.slice(start, end);
-    this.totalPages = Math.ceil(this.filteredBornes.length / this.pageSize);
-  }
+  const start = (this.currentPage - 1) * this.pageSize;
+  const end = start + this.pageSize;
+
+  this.paginatedBornes = this.filteredBornes.slice(start, end);
+}
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
@@ -233,11 +295,10 @@ export class AdminDashboardComponent implements OnInit {
 }
 
    saveBorne(): void {
-  if (this.savingBorne) {
-    return;
-  }
+  if (this.savingBorne) return;
 
   this.savingBorne = true;
+
   const payload: any = {
     title: this.newBorne.title?.trim(),
     address: this.newBorne.address?.trim(),
@@ -257,33 +318,26 @@ export class AdminDashboardComponent implements OnInit {
     isOccupied: false
   };
 
-  console.log('Payload borne envoyé:', payload);
+  console.log('Payload borne envoyé:', JSON.stringify(payload));
 
-  if (this.isEditMode) {
-    this.borneService.updateBorne(this.newBorne.id, payload).subscribe({
-      next: () => {
+  const request$ = this.isEditMode
+    ? this.borneService.updateBorne(this.newBorne.id, payload)
+    : this.borneService.addBorne(payload);
+
+  request$
+    .pipe(finalize(() => this.savingBorne = false))
+    .subscribe({
+      next: (saved) => {
+        console.log('Borne enregistrée:', saved);
         this.loadBornes();
         this.resetForm();
       },
       error: (err) => {
-        console.error('Erreur modification borne', err);
+        console.error('Erreur enregistrement borne', err);
         console.error('Erreur backend:', err.error);
+        alert('Erreur ajout borne: ' + JSON.stringify(err.error));
       }
     });
-
-    return;
-  }
-
-  this.borneService.addBorne(payload).subscribe({
-    next: () => {
-      this.loadBornes();
-      this.resetForm();
-    },
-    error: (err) => {
-      console.error('Erreur ajout borne', err);
-      console.error('Erreur backend:', err.error);
-    }
-  });
 }
   // ==================== CONNEXIONS ====================
   openConnections(borne: Borne): void {
@@ -391,7 +445,62 @@ export class AdminDashboardComponent implements OnInit {
         });
     }
   }
+  openAddConnection(): void {
+  if (!this.selectedBorne) return;
 
+  this.newConnection = {
+    stationId: this.selectedBorne.id,
+    connectionType: '',
+    powerKw: 0,
+    quantity: 1,
+    voltage: 0,
+    amps: 0,
+    level: '',
+    currentType: ''
+  };
+
+  this.showAddConnectionModal = true;
+}
+
+closeAddConnectionModal(): void {
+  this.showAddConnectionModal = false;
+}
+
+saveNewConnection(): void {
+  if (!this.selectedBorne) return;
+
+  const payload = {
+    ...this.newConnection,
+    stationId: this.selectedBorne.id,
+    powerKw: Number(this.newConnection.powerKw) || 0,
+    quantity: Number(this.newConnection.quantity) || 1,
+    voltage: Number(this.newConnection.voltage) || 0,
+    amps: Number(this.newConnection.amps) || 0
+  };
+
+  this.borneService.addConnection(payload).subscribe({
+    next: () => {
+      this.borneService.getConnectionsByBorne(this.selectedBorne!.id).subscribe({
+        next: (data) => {
+          this.connections = data;
+          this.closeAddConnectionModal();
+        },
+        error: (err) => console.error('Erreur rechargement connexions', err)
+      });
+    },
+    error: (err) => {
+      console.error('Erreur ajout connexion', err);
+      console.error('Erreur backend:', err.error);
+    }
+  });
+} 
+    refreshBornes(): void {
+  this.currentPage = 1;
+
+  // Remplace loadBornes() par le nom de ta méthode
+  // qui récupère les bornes depuis ton backend.
+  this.loadBornes();
+}
   // ==================== LOGOUT ====================
   logout(): void {
     this.authService.logout();

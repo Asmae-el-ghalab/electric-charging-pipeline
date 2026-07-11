@@ -52,6 +52,10 @@ export class SessionComponent implements OnInit, OnDestroy {
   tarifKWh = 0.30;
   seuilsAtteints = new Set<number>();
 
+  // ✅ Chrono temps réel (secondes) — ticking chaque seconde
+  chronoSeconds = 0;
+  private chronoInterval: any;
+
   // WebSocket
   private webSocket: WebSocket | null = null;
   private refreshInterval: any;
@@ -103,6 +107,11 @@ export class SessionComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
+    }
+
+    if (this.chronoInterval) {
+      clearInterval(this.chronoInterval);
+      this.chronoInterval = null;
     }
     
     if (this.webSocket) {
@@ -318,12 +327,40 @@ export class SessionComponent implements OnInit, OnDestroy {
     console.log('🔄 Démarrage du suivi en temps réel');
     
     this.setupWebSocket();
+    this.demarrerChrono();
     
     this.calculerMetriques();
     this.refreshInterval = setInterval(() => {
       this.calculerMetriques();
       this.cdr.detectChanges();
     }, 5000);
+  }
+
+  // ============================================================
+  // ✅ CHRONO LIVE (secondes)
+  // ============================================================
+
+  private demarrerChrono(): void {
+    if (this.chronoInterval) {
+      clearInterval(this.chronoInterval);
+    }
+
+    this.chronoInterval = setInterval(() => {
+      if (this.session?.dateDebut) {
+        const debut = new Date(this.session.dateDebut);
+        const maintenant = new Date();
+        this.chronoSeconds = Math.floor((maintenant.getTime() - debut.getTime()) / 1000);
+        this.cdr.detectChanges();
+      }
+    }, 1000);
+  }
+
+  get chronoFormatted(): string {
+    const h = Math.floor(this.chronoSeconds / 3600);
+    const m = Math.floor((this.chronoSeconds % 3600) / 60);
+    const s = this.chronoSeconds % 60;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
   }
 
   private setupWebSocket(): void {

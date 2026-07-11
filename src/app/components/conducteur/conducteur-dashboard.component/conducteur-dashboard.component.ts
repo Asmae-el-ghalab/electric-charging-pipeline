@@ -175,29 +175,11 @@ export class ConducteurDashboardComponent implements OnInit {
     }
     
     // ✅ Dernier recours
-    if (!this.conducteurId || this.conducteurId === 'null' || this.conducteurId === 'undefined' || this.conducteurId === '0') {
-      // Utiliser l'email comme ID de secours
-      const email = this.authService.getUserEmail();
-      if (email) {
-        // Générer un ID numérique à partir de l'email
-        let hash = 0;
-        for (let i = 0; i < email.length; i++) {
-          hash = ((hash << 5) - hash) + email.charCodeAt(i);
-          hash = hash & hash;
-        }
-        const generatedId = Math.abs(hash) % 1000 + 1;
-        this.conducteurId = generatedId.toString();
-        this.conducteurIdNumber = generatedId;
-        localStorage.setItem('userId', this.conducteurId);
-        console.log('🆔 ID généré depuis l\'email:', this.conducteurId);
-      } else {
-        console.warn('⚠️ Aucun ID trouvé, utilisation de l\'ID 6 par défaut');
-        this.conducteurId = '6';
-        this.conducteurIdNumber = 6;
-        localStorage.setItem('userId', this.conducteurId);
-      }
-    }
-    
+    if (!this.conducteurIdNumber || this.conducteurIdNumber <= 0) {
+  console.error('❌ ID conducteur invalide. Reconnectez-vous.');
+  this.authService.logout();
+  return;
+}
     this.chargerToutesLesDonnees();
   }
   
@@ -730,6 +712,9 @@ console.log(JSON.stringify(signalementData));
     this.chargerToutesLesDonnees();
   }
   
+retourAccueil(): void {
+  this.router.navigate(['/']);
+}
   logout(): void {
     this.authService.logout();
   }

@@ -19,13 +19,23 @@ export class HeroComponent {
     this.router.navigate(['/carte']);
   }
   
-  onNavigateToSignup(event: Event): void {
-    event.preventDefault();
-    this.router.navigate(['/inscription']);
-  }
+  onNavigateToRecherche(event: Event): void {
+  event.preventDefault();
+  this.router.navigate(['/bornes']);
+}
   
   onImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = 'https://cdn-icons-png.flaticon.com/512/2815/2815428.png';
+  } 
+  learnMore(): void {
+  const rechercheSection = document.querySelector('.recherche-container');
+
+  if (rechercheSection) {
+    rechercheSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
   }
+}
 }

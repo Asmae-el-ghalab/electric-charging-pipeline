@@ -23,7 +23,7 @@
           <i class="fas fa-map-marker-alt"></i>
            Consulter la carte
         </a>
-        <a href="#" class="btn-secondary btn-large" (click)="onNavigateToSignup($event)">
+        <a href="#" class="btn-secondary btn-large" (click)="onNavigateToRecherche($event)">
           <i class="fas fa-bolt"></i>
           Commencer
         </a>
@@ -31,4 +31,52 @@
     </div>
     
   </div>
-</section>
+</section> 
+<section class="about-section">
+    <div class="about-content">
+      <div class="about-text">
+        <span class="about-label">
+          <i class="fas fa-leaf"></i>
+          Mobilité électrique au Maroc
+        </span>
+
+        <h2>
+          À propos de
+          <span>ChargeMap Maroc</span>
+        </h2>
+
+        <p>
+          La première plateforme dédiée aux bornes de recharge pour véhicules
+          électriques au Maroc.
+        </p>
+
+        <p>
+          Notre mission est d'accélérer la transition énergétique au Maroc en
+          facilitant l'accès aux bornes de recharge pour tous les propriétaires
+          de véhicules électriques.
+        </p>
+
+        <div class="about-features">
+          <div class="feature">
+            <span class="feature-icon">📍</span>
+            <span>Plus de 100 bornes recensées</span>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">🏙️</span>
+            <span>Couverture dans toutes les grandes villes</span>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">⚡</span>
+            <span>Informations en temps réel</span>
+          </div>
+        </div>
+
+        <button class="btn-about" (click)="learnMore()">
+          En savoir plus
+          <span>→</span>
+        </button>
+      </div>
+    </div>
+  </section>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UtilisateurService } from '../../../../services/utilisateur.service';
-import { AuthService } from '../../../../services/auth.service'; // ✅ AJOUT
+import { AuthService } from '../../../../services/auth.service';
 import { Utilisateur } from '../../../models/utilisateur.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,13 +25,12 @@ export class AdminUtilisateursComponent implements OnInit {
     total: 0,
     actifs: 0,
     bloques: 0,
-    admins: 0,
     conducteurs: 0
   };
 
   constructor(
     private utilisateurService: UtilisateurService,
-    private authService: AuthService // ✅ AJOUT
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -59,7 +58,6 @@ export class AdminUtilisateursComponent implements OnInit {
     this.stats.total = this.utilisateurs.length;
     this.stats.actifs = this.utilisateurs.filter(u => !u.estBloque).length;
     this.stats.bloques = this.utilisateurs.filter(u => u.estBloque).length;
-    this.stats.admins = this.utilisateurs.filter(u => u.role === 'ADMIN').length;
     this.stats.conducteurs = this.utilisateurs.filter(u => u.role === 'CONDUCTEUR').length;
   }
 
@@ -79,8 +77,6 @@ export class AdminUtilisateursComponent implements OnInit {
     return matchesSearch && matchesRole && matchesStatus;
     });
   }
-
- 
 
   onSearch(event: Event): void {
     this.searchTerm = (event.target as HTMLInputElement).value;
@@ -105,10 +101,8 @@ export class AdminUtilisateursComponent implements OnInit {
     this.selectedUtilisateur = null;
   }
 
-  // ==================== ✅ TOGGLE BLOQUER MODIFIÉ AVEC AUTH SERVICE ====================
   toggleBloquer(user: Utilisateur): void {
     if (user.estBloque) {
-      // ✅ Débloquer - Utilise la nouvelle méthode
       this.utilisateurService.debloquerUtilisateur(user.id).subscribe({
         next: (updated) => {
           user.estBloque = false;
@@ -116,7 +110,6 @@ export class AdminUtilisateursComponent implements OnInit {
           if (this.selectedUtilisateur?.id === user.id) {
             this.selectedUtilisateur = updated;
           }
-          // ✅ Mettre à jour le statut dans AuthService si c'est l'utilisateur connecté
           this.authService.updateBlockedStatus(false);
           this.showNotification('✅ Utilisateur débloqué avec succès !', 'success');
         },
@@ -126,7 +119,6 @@ export class AdminUtilisateursComponent implements OnInit {
         }
       });
     } else {
-      // ✅ Bloquer - Utilise la nouvelle méthode
       if (confirm(`Êtes-vous sûr de vouloir bloquer ${user.nom} ?`)) {
         this.utilisateurService.bloquerUtilisateur(user.id).subscribe({
           next: (updated) => {
@@ -135,7 +127,6 @@ export class AdminUtilisateursComponent implements OnInit {
             if (this.selectedUtilisateur?.id === user.id) {
               this.selectedUtilisateur = updated;
             }
-            // ✅ Mettre à jour le statut dans AuthService si c'est l'utilisateur connecté
             this.authService.updateBlockedStatus(true);
             this.showNotification('✅ Utilisateur bloqué avec succès !', 'success');
           },
@@ -168,45 +159,6 @@ export class AdminUtilisateursComponent implements OnInit {
     }
   }
 
-  promouvoirAdmin(user: Utilisateur): void {
-    if (confirm(`Promouvoir ${user.nom} en administrateur ?`)) {
-      this.utilisateurService.promouvoirAdmin(user.id).subscribe({
-        next: (updated) => {
-          user.role = 'ADMIN';
-          this.calculateStats();
-          if (this.selectedUtilisateur?.id === user.id) {
-            this.selectedUtilisateur = updated;
-          }
-          this.showNotification('✅ Utilisateur promu administrateur !', 'success');
-        },
-        error: (err) => {
-          console.error('Erreur promotion', err);
-          this.showNotification('❌ Erreur lors de la promotion', 'error');
-        }
-      });
-    }
-  }
-
-  retrograderAdmin(user: Utilisateur): void {
-    if (confirm(`Rétrograder ${user.nom} de administrateur ?`)) {
-      this.utilisateurService.retrograderAdmin(user.id).subscribe({
-        next: (updated) => {
-          user.role = 'CONDUCTEUR';
-          this.calculateStats();
-          if (this.selectedUtilisateur?.id === user.id) {
-            this.selectedUtilisateur = updated;
-          }
-          this.showNotification('✅ Utilisateur rétrogradé avec succès !', 'success');
-        },
-        error: (err) => {
-          console.error('Erreur rétrogradation', err);
-          this.showNotification('❌ Erreur lors de la rétrogradation', 'error');
-        }
-      });
-    }
-  }
-
-  // ==================== ✅ NOTIFICATION STYLISÉE ====================
   showNotification(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
     const colors = {
       success: '#22c55e',
@@ -240,7 +192,6 @@ export class AdminUtilisateursComponent implements OnInit {
     }, 3000);
   }
 
-  // ==================== UTILITAIRES ====================
   getRoleClass(role: string): string {
     const classes: { [key: string]: string } = {
       'ADMIN': 'r-admin',
@@ -258,20 +209,19 @@ export class AdminUtilisateursComponent implements OnInit {
     };
     return labels[role] || role;
   }
-getStatusClass(user: Utilisateur): string {
-  return user.estBloque ? 's-blocked' : 's-active';
-}
 
-getStatusLabel(user: Utilisateur): string {
-  return user.estBloque ? 'Bloqué' : 'Actif';
-}
+  getStatusClass(user: Utilisateur): string {
+    return user.estBloque ? 's-blocked' : 's-active';
+  }
 
-getStatusIcon(user: Utilisateur): string {
-  return user.estBloque ? '🔒' : '🟢';
-}
-  
+  getStatusLabel(user: Utilisateur): string {
+    return user.estBloque ? 'Bloqué' : 'Actif';
+  }
 
- 
+  getStatusIcon(user: Utilisateur): string {
+    return user.estBloque ? '🔒' : '🟢';
+  }
+
   getInitials(nom: string): string {
     return nom.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   }

@@ -3,9 +3,11 @@
 <div class="admin-layout">
   <aside class="admin-sidebar">
    <div class="sidebar-logo">
-  <img src="assets/img/v1.png" alt="Charge flow" class="logo-image" />
+ 
   <span class="logo-text">ChargeFlow</span>
-</div>
+</div> 
+
+ 
 
     <nav class="sidebar-nav">
       <a
@@ -44,11 +46,16 @@
           <div class="user-role">Administrateur</div>
         </div>
       </div>
-
+       
       <button class="btn-logout" (click)="logout()">
         <span>🚪</span>
         <span>Déconnexion</span>
-      </button>
+      </button> 
+    
+      <a routerLink="/" class="btn-retour-accueil">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Retour à l'accueil</span>
+    </a>
     </div>
   </aside>
 

@@ -10,45 +10,57 @@
     <div class="hero-overlay"></div>
     <div class="hero-container">
       <div class="hero-content">
-        <h1 class="hero-title">À propos de <span class="highlight">RechargeMaroc</span></h1>
-        <p class="hero-subtitle">Notre mission : accélérer la transition énergétique au Maroc</p>
+        <h1 class="hero-title">À propos de <span class="highlight">Charge Flow</span></h1>
+       
       </div>
     </div>
   </section>
 
   <!-- Section Mission -->
-  <section class="mission-section">
-    <div class="container">
-      <div class="mission-content">
-        <div class="mission-text">
-          <span class="section-tag">Notre Mission</span>
-          <h2>Rendre la mobilité électrique accessible à tous</h2>
-          <p>
-            RechargeMaroc est la première plateforme marocaine dédiée à la recherche 
-            et à la localisation de bornes de recharge pour véhicules électriques. 
-            Notre mission est de faciliter la transition énergétique en offrant une 
-            solution simple, fiable et complète pour les conducteurs de véhicules 
-            électriques au Maroc.
-          </p>
-          <div class="mission-stats">
-            <div class="stat-item">
-              <span class="stat-number" data-count="98">0</span>
-              <span class="stat-label">% de satisfaction</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number" data-count="150">0</span>
-              <span class="stat-label">Bornes répertoriées</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number" data-count="12">0</span>
-              <span class="stat-label">Villes couvertes</span>
-            </div>
+<section class="mission-section">
+  <div class="mission-bg-shape mission-shape-1"></div>
+  <div class="mission-bg-shape mission-shape-2"></div>
+
+  <div class="container">
+    <div class="mission-content">
+      <div class="mission-text">
+        <span class="section-tag">Notre Mission</span>
+        <h2>Rendre la mobilité électrique <span class="highlight-text">accessible à tous</span></h2>
+        <p>
+          RechargeMaroc est la première plateforme marocaine dédiée à la recherche
+          et à la localisation de bornes de recharge pour véhicules électriques.
+          Notre mission est de faciliter la transition énergétique en offrant une
+          solution simple, fiable et complète pour les conducteurs de véhicules
+          électriques au Maroc.
+        </p>
+        <div class="mission-stats">
+          <div class="stat-item">
+            <span class="stat-number" data-count="98">0</span>
+            <span class="stat-label">% de satisfaction</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-count="150">0</span>
+            <span class="stat-label">Bornes répertoriées</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-count="12">0</span>
+            <span class="stat-label">Villes couvertes</span>
           </div>
         </div>
-        <div class="mission-image"></div>
+      </div>
+
+      <div class="mission-image">
+        <div class="mission-image-badge">
+          <span class="badge-icon">⚡</span>
+          <div>
+            <strong>100% Électrique</strong>
+            <small>Énergie propre</small>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- Section Valeurs -->
   <section class="values-section">
@@ -84,34 +96,56 @@
   </section>
 
   <!-- Section Équipe -->
-  <section class="team-section">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Notre Équipe</span>
-        <h2>Des passionnés de la mobilité durable</h2>
-        <p>Une équipe dédiée à rendre la recharge électrique plus simple et accessible</p>
+<!-- Section Prises & Véhicules Électriques -->
+<section class="tech-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Compatibilité</span>
+      <h2>Toutes les prises, tous les véhicules</h2>
+      <p>RechargeMaroc couvre l'ensemble des standards de recharge présents au Maroc</p>
+    </div>
+  </div>
+
+  <!-- Bande 1 : Types de prises -->
+  <div class="slider-wrapper">
+    <div class="slider-fade slider-fade-left"></div>
+    <div class="slider-fade slider-fade-right"></div>
+    <div class="slider-track plugs-track">
+      <div class="plug-card" *ngFor="let prise of [1,2] ; let outer = index">
+        <ng-container *ngFor="let p of typesPrises">
+          <div class="plug-item">
+            <div class="plug-icon" [innerHTML]="p.icon"></div>
+            <h4>{{ p.nom }}</h4>
+            <span class="plug-power">{{ p.puissance }}</span>
+          </div>
+        </ng-container>
       </div>
-      <div class="team-grid">
-        <div class="team-card" *ngFor="let membre of equipe; let i = index">
-          <div class="team-photo" [class.photo-1]="i === 0" [class.photo-2]="i === 1" [class.photo-3]="i === 2" [class.photo-4]="i === 3">
-            <div class="team-social">
-              <a [href]="membre.linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                <i class="fab fa-linkedin-in"></i>
-              </a>
-              <a [href]="membre.twitter" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                <i class="fab fa-twitter"></i>
-              </a>
-            </div>
-          </div>
-          <div class="team-info">
-            <h3>{{ membre.nom }}</h3>
-            <span class="team-role">{{ membre.role }}</span>
-            <p>{{ membre.bio }}</p>
-          </div>
+    </div>
+  </div>
+
+  <!-- Bande 2 : Véhicules électriques (défile en sens inverse) -->
+  <div class="slider-wrapper cars-wrapper">
+    <div class="slider-fade slider-fade-left"></div>
+    <div class="slider-fade slider-fade-right"></div>
+    <div class="slider-track cars-track">
+      <div class="car-item" *ngFor="let v of vehicules; let i = index"
+           [ngStyle]="{'background-image': 'url(' + v.photo + ')'}">
+        <div class="car-overlay">
+          <h4>{{ v.marque }}</h4>
+          <span>{{ v.autonomie }}</span>
+        </div>
+      </div>
+      <!-- Duplication pour boucle infinie fluide -->
+      <div class="car-item" *ngFor="let v of vehicules; let i = index"
+           [ngStyle]="{'background-image': 'url(' + v.photo + ')'}">
+        <div class="car-overlay">
+          <h4>{{ v.marque }}</h4>
+          <span>{{ v.autonomie }}</span>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- Section Chiffres Clés -->
   <section class="stats-section">
@@ -152,50 +186,110 @@
   </section>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a routerLink="/" class="logo"></a>
-          <p>La première plateforme marocaine de localisation des bornes de recharge pour véhicules électriques.</p>
-          <div class="footer-social">
-            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          </div>
-        </div>
-        <div class="footer-links">
-          <h4>Liens rapides</h4>
-          <ul>
-            <li><a routerLink="/">Accueil</a></li>
-            <li><a routerLink="/carte">Carte</a></li>
-            <li><a routerLink="/bornes">Bornes</a></li>
-            <li><a routerLink="/a-propos">À propos</a></li>
-            <li><a routerLink="/contact">Contact</a></li>
-          </ul>
-        </div>
-        <div class="footer-links">
-          <h4>Ressources</h4>
-          <ul>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Conditions d'utilisation</a></li>
-            <li><a href="#">Politique de confidentialité</a></li>
-          </ul>
-        </div>
-        <div class="footer-contact">
-          <h4>Contact</h4>
-          <ul>
-            <li><i class="fas fa-envelope"></i> contact@rechargemaroc.ma</li>
-            <li><i class="fas fa-phone"></i> +212 5 22 33 44 55</li>
-            <li><i class="fas fa-map-marker-alt"></i> Casablanca, Maroc</li>
-          </ul>
+    <footer class="footer">
+  <div class="footer-glow footer-glow-left"></div>
+  <div class="footer-glow footer-glow-right"></div>
+
+  <div class="footer-container">
+
+    <div class="footer-top">
+      <div class="footer-brand">
+
+        <a routerLink="/" class="footer-logo-link" aria-label="Accueil ChargeFlow">
+          <img
+            src="assets/img/v1.png"
+            alt="ChargeFlow"
+            class="footer-logo"
+          />
+        </a>
+
+        <p class="footer-description">
+          La plateforme marocaine intelligente pour localiser les bornes de recharge
+          pour véhicules électriques et planifier vos trajets facilement.
+        </p>
+
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+
+          <a href="#" aria-label="Twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
+
+          <a href="#" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+
+          <a href="#" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; 2024 RechargeMaroc. Tous droits réservés.</p>
+
+      <div class="footer-links">
+        <h4>Navigation</h4>
+
+        <ul>
+          <li><a routerLink="/"><i class="fas fa-chevron-right"></i> Accueil</a></li>
+          <li><a routerLink="/carte"><i class="fas fa-chevron-right"></i> Carte</a></li>
+          <li><a routerLink="/bornes"><i class="fas fa-chevron-right"></i> Bornes</a></li>
+          <li><a routerLink="/a-propos"><i class="fas fa-chevron-right"></i> À propos</a></li>
+          <li><a routerLink="/contact"><i class="fas fa-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Ressources</h4>
+
+        <ul>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> FAQ</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Blog</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Conditions d'utilisation</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Politique de confidentialité</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h4>Contact</h4>
+
+        <ul>
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <span>contact@chargeflow.ma</span>
+          </li>
+
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-phone"></i>
+            </span>
+            <span>+212 5 22 33 44 55</span>
+          </li>
+
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </span>
+            <span>Casablanca, Maroc</span>
+          </li>
+        </ul>
       </div>
     </div>
-  </footer>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-bottom">
+      <p>© 2026 ChargeFlow. Tous droits réservés.</p>
+
+      <div class="footer-bottom-links">
+        <a href="#">Confidentialité</a>
+        <span></span>
+        <a href="#">Mentions légales</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
 </div>

@@ -1,103 +1,302 @@
+<!-- =========================
+     NAVBAR
+========================= -->
+<app-navbar></app-navbar>
+
+<!-- =========================
+     PAGE CARTE
+========================= -->
 <div class="map-page">
-  <!-- Barre de recherche et filtres -->
-  <section class="navigation-section">
-    <app-navbar></app-navbar>
+
+  <!-- =========================
+       MAP
+  ========================= -->
+  <section class="map-section">
+
+    <div id="map" class="map-container"></div>
+
+    <!-- Chargement -->
+    <div class="loading-overlay" *ngIf="loading">
+      <div class="spinner"></div>
+
+      <p>Chargement des bornes de recharge...</p>
+
+      <p class="loading-count" *ngIf="filteredBornes.length > 0">
+        {{ filteredBornes.length }} bornes chargées
+      </p>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-panel" *ngIf="!loading && filteredBornes.length > 0">
+
+      <div class="stat-item">
+        <span class="stat-value">{{ filteredBornes.length }}</span>
+        <span class="stat-label">Bornes</span>
+        <span class="stat-icon">📍</span>
+      </div>
+
+      <div class="stat-item">
+        <span class="stat-value">{{ operationalCount }}</span>
+        <span class="stat-label">Opérationnelles</span>
+        <span class="stat-icon">✅</span>
+      </div>
+
+      <div class="stat-item" *ngIf="userPosition">
+        <span class="stat-value">{{ getDistanceToNearest() }} km</span>
+        <span class="stat-label">Plus proche</span>
+        <span class="stat-icon">📏</span>
+      </div>
+
+    </div>
+
+    <!-- Légende -->
+    <div class="legend">
+
+      <h4>📌 Légende</h4>
+
+      <div class="legend-item">
+        <div class="marker-dot operational"></div>
+        <span>Opérationnelle</span>
+      </div>
+
+      <div class="legend-item">
+        <div class="marker-dot maintenance"></div>
+        <span>En maintenance</span>
+      </div>
+
+      <div class="legend-item">
+        <div class="marker-dot outofservice"></div>
+        <span>Hors service</span>
+      </div>
+
+      <div class="legend-item">
+        <div class="marker-dot planned"></div>
+        <span>Planifiée</span>
+      </div>
+
+      <div class="legend-item">
+        <div class="marker-dot occupied"></div>
+        <span>Occupée</span>
+      </div>
+
+    </div>
+
+    <!-- Aucun résultat -->
+    <div class="no-results" *ngIf="!loading && filteredBornes.length === 0">
+
+      <div class="no-results-icon">🔍</div>
+
+      <h3>Aucun résultat trouvé</h3>
+
+      <p>Aucune borne ne correspond à vos critères de recherche.</p>
+
+      <button
+        class="btn-reset"
+        (click)="clearSearch(); statusFilter = ''; filterMarkers()"
+      >
+        Réinitialiser les filtres
+      </button>
+
+    </div>
+
   </section>
-  <div class="map-controls">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input 
-        type="text" 
-        placeholder="Rechercher une borne, ville ou opérateur..." 
-        [(ngModel)]="searchTerm"
-        (input)="filterMarkers()"
-        class="search-input">
-      <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()">✕</button>
-    </div>
-    
-    <div class="filter-group">
-      <select [(ngModel)]="statusFilter" (change)="filterMarkers()" class="status-select">
-        <option *ngFor="let opt of statusOptions" [value]="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
-      
-      <button class="locate-btn" (click)="locateUser()" title="Ma position">
-        📍 Ma position
-      </button>
-      
-      <button class="refresh-btn" (click)="refresh()" title="Actualiser">
-        🔄
-      </button>
-    </div>
-  </div>
 
-  <!-- Chargement -->
-  <div class="loading-overlay" *ngIf="loading">
-    <div class="spinner"></div>
-    <p>Chargement des bornes de recharge...</p>
-    <p class="loading-count" *ngIf="filteredBornes.length > 0">{{ filteredBornes.length }} bornes chargées</p>
-  </div>
+  <!-- =========================
+       BARRE DE RECHERCHE
+       Flotte juste sous la carte
+  ========================= -->
+  <section class="search-section">
 
-  <!-- Carte -->
-  <div id="map" class="map-container"></div>
+    <div class="map-controls">
 
-  <!-- Panneau de statistiques -->
-  <div class="stats-panel" *ngIf="!loading && filteredBornes.length > 0">
-    <div class="stat-item">
-      <span class="stat-value">{{ filteredBornes.length }}</span>
-      <span class="stat-label">Bornes</span>
-      <span class="stat-icon">📍</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">{{ operationalCount }}</span>
-      <span class="stat-label">Opérationnelles</span>
-      <span class="stat-icon">✅</span>
-    </div>
-    <div class="stat-item" *ngIf="userPosition">
-      <span class="stat-value">{{ getDistanceToNearest() }} km</span>
-      <span class="stat-label">Plus proche</span>
-      <span class="stat-icon">📏</span>
-    </div>
-  </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
 
-  <!-- Légende -->
-  <div class="legend">
-    <h4>📌 Légende</h4>
-    <div class="legend-item">
-      <div class="marker-dot operational"></div>
-      <span>Opérationnelle</span>
-    </div>
-    <div class="legend-item">
-      <div class="marker-dot maintenance"></div>
-      <span>En maintenance</span>
-    </div>
-    <div class="legend-item">
-      <div class="marker-dot outofservice"></div>
-      <span>Hors service</span>
-    </div>
-    <div class="legend-item">
-      <div class="marker-dot planned"></div>
-      <span>Planifiée</span>
-    </div>
-    <div class="legend-item">
-      <div class="marker-dot occupied"></div>
-      <span>Occupée</span>
-    </div>
-  </div>
+        <input
+          type="text"
+          placeholder="Rechercher une borne, ville ou opérateur..."
+          [(ngModel)]="searchTerm"
+          (input)="filterMarkers()"
+          class="search-input"
+        >
 
-  <!-- Message si aucun résultat -->
-  <div class="no-results" *ngIf="!loading && filteredBornes.length === 0">
-    <div class="no-results-icon">🔍</div>
-    <h3>Aucun résultat trouvé</h3>
-    <p>Aucune borne ne correspond à vos critères de recherche</p>
-    <button class="btn-reset" (click)="clearSearch(); statusFilter = ''; filterMarkers()">
-      Réinitialiser les filtres
-    </button>
-  </div>
+        <button
+          class="clear-btn"
+          *ngIf="searchTerm"
+          (click)="clearSearch()"
+          title="Effacer"
+        >
+          ✕
+        </button>
+      </div>
 
-  <!-- Bouton retour haut de page -->
-  <button class="scroll-top" (click)="scrollToTop()" title="Haut de page" *ngIf="showScrollTop">
+      <div class="filter-group">
+
+        <select
+          [(ngModel)]="statusFilter"
+          (change)="filterMarkers()"
+          class="status-select"
+        >
+          <option *ngFor="let opt of statusOptions" [value]="opt.value">
+            {{ opt.label }}
+          </option>
+        </select>
+
+        <button
+          class="locate-btn"
+          (click)="locateUser()"
+          title="Ma position"
+        >
+          📍 Ma position
+        </button>
+
+        <button
+          class="refresh-btn"
+          (click)="refresh()"
+          title="Actualiser"
+        >
+          🔄
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Bouton retour haut -->
+  <button
+    class="scroll-top"
+    (click)="scrollToTop()"
+    title="Haut de page"
+    *ngIf="showScrollTop"
+  >
     ↑
   </button>
+
 </div>
+
+<!-- =========================
+     FOOTER
+     Il apparaît seulement après scroll
+========================= -->
+<footer class="footer">
+
+  <div class="footer-container">
+
+    <div class="footer-top">
+
+      <!-- Logo -->
+      <div class="footer-brand">
+
+        <a routerLink="/" class="footer-logo-link" aria-label="Accueil ChargeFlow">
+          <img
+            src="assets/img/v1.png"
+            alt="ChargeFlow"
+            class="footer-logo"
+          >
+        </a>
+
+        <p class="footer-description">
+          La plateforme marocaine intelligente pour localiser les bornes de recharge
+          pour véhicules électriques et planifier vos trajets facilement.
+        </p>
+
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+
+          <a href="#" aria-label="Twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
+
+          <a href="#" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+
+          <a href="#" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Navigation -->
+      <div class="footer-links">
+
+        <h4>Navigation</h4>
+
+        <ul>
+          <li><a routerLink="/"><i class="fas fa-chevron-right"></i> Accueil</a></li>
+          <li><a routerLink="/carte"><i class="fas fa-chevron-right"></i> Carte</a></li>
+          <li><a routerLink="/bornes"><i class="fas fa-chevron-right"></i> Bornes</a></li>
+          <li><a routerLink="/a-propos"><i class="fas fa-chevron-right"></i> À propos</a></li>
+          <li><a routerLink="/contact"><i class="fas fa-chevron-right"></i> Contact</a></li>
+        </ul>
+
+      </div>
+
+      <!-- Ressources -->
+      <div class="footer-links">
+
+        <h4>Ressources</h4>
+
+        <ul>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> FAQ</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Blog</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Conditions d'utilisation</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right"></i> Politique de confidentialité</a></li>
+        </ul>
+
+      </div>
+
+      <!-- Contact -->
+      <div class="footer-contact">
+
+        <h4>Contact</h4>
+
+        <ul>
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <span>contact@chargeflow.ma</span>
+          </li>
+
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-phone"></i>
+            </span>
+            <span>+212 5 22 33 44 55</span>
+          </li>
+
+          <li>
+            <span class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </span>
+            <span>Casablanca, Maroc</span>
+          </li>
+        </ul>
+
+      </div>
+
+    </div>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-bottom">
+
+      <p>© 2026 ChargeFlow. Tous droits réservés.</p>
+
+      <div class="footer-bottom-links">
+        <a href="#">Confidentialité</a>
+        <span></span>
+        <a href="#">Mentions légales</a>
+      </div>
+
+    </div>
+
+  </div>
+
+</footer>

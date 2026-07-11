@@ -125,7 +125,10 @@
       
       <div class="metrics-grid">
         <div class="metric" [class.warning]="progression > 80" [class.danger]="progression > 95">
-          <span class="metric-label">⏱️ Temps écoulé</span>
+          <span class="metric-label">
+            <span class="chrono-live">{{ chronoFormatted }}</span>
+            ⏱️ Temps écoulé
+          </span>
           <span class="metric-value">{{ tempsEcoule }} min</span>
           <span class="metric-sub">sur {{ dureeMaximale }} min</span>
           <div class="metric-progress">
